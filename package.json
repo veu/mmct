@@ -1,0 +1,16 @@
+{
+  "name": "contentful-trim",
+  "version": "1.0.0",
+  "description": "",
+  "dependencies": {
+    "commander": "^2.9.0",
+    "contentful-management": "^1.2.1",
+    "lodash": "^4.16.4"
+  },
+  "devDependencies": {},
+  "bin": {
+    "contentful-trim": "./index.js"
+  },
+  "author": "Rebecca",
+  "license": "MIT"
+}
