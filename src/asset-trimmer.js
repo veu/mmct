@@ -1,6 +1,7 @@
 const AssetIdCollector = require('./asset-id-collector');
 const AssetLink = require('./asset-link');
 const EntryTraverser = require('./entry-traverser');
+const promiseAll = require('sync-p/all');
 
 module.exports = class AssetTrimmer {
 
@@ -12,19 +13,12 @@ module.exports = class AssetTrimmer {
             deletedCount: 0
         };
 
-        const promise = new Promise((resolve, reject) => {
-            this.resolve = resolve;
-            this.reject = reject;
-        });
-
-        space
+        return space
             .getEntries()
             .then(entries => this.collectAssetIds(entries))
             .then(() => space.getAssets())
-            .then(assets => this.handleAssets(assets))
-            .catch(error => this.reject(error));
-
-        return promise;
+            .then(assets => this.deleteUnusedAssets(assets))
+            .then(() => this.stats);
     }
 
     collectAssetIds(entries) {
@@ -35,19 +29,12 @@ module.exports = class AssetTrimmer {
         this.usedAssetIds = assetIdCollector.assetIds;
     }
 
-    handleAssets(assets) {
-        const unusedAssets = assets.items.filter(asset => !this.isUsed(asset));
-
-        if (this.isDryRun || unusedAssets.length == 0) {
-            unusedAssets.forEach(asset => this.printAssetInfo(asset));
-            this.resolve(this.stats);
-            return;
-        }
-
-        this.deleteAssets(unusedAssets);
+    deleteUnusedAssets(assets) {
+        const unusedAssets = assets.items.filter(asset => !this.isInUse(asset));
+        return promiseAll(unusedAssets.map(asset => this.deleteAsset(asset)));
     }
 
-    isUsed(asset) {
+    isInUse(asset) {
         if (this.usedAssetIds.has(asset.sys.id)) {
             return true;
         }
@@ -72,37 +59,18 @@ module.exports = class AssetTrimmer {
         return diff / (24 * 60 * 60 * 1000);
     }
 
-    deleteAssets(assets) {
-        if (assets.length == 0) {
-            this.resolve(this.stats);
+    deleteAsset(asset) {
+        this.printAssetInfo(asset);
+        this.stats.deletedCount ++;
+
+        if (this.isDryRun) {
             return;
         }
-
-        const asset = assets.pop();
-        this.printAssetInfo(asset);
 
         if (asset.isPublished()) {
-            asset.unpublish()
-                .then(() => {
-                    this.deleteAsset(asset, () => this.deleteAssets(assets));
-                })
-                .catch(error => {
-                    this.reject(error);
-                });
-            return;
+            return asset.unpublish().then(() => asset.delete());
         }
 
-        this.deleteAsset(asset, () => this.deleteAssets(assets));
-    }
-
-    deleteAsset(asset, callback) {
-        asset.delete()
-            .then(() => {
-                this.stats.deletedCount ++;
-                callback();
-            })
-            .catch(error => {
-                this.reject(error);
-            });
+        return asset.delete();
     }
 }
