@@ -3,7 +3,7 @@ const _ = require('lodash');
 module.exports = class EntryTraverser {
     traverse(entries, visitor) {
         this.visitor = visitor;
-        entries.items.forEach(entry => this.traverseEntry(entry));
+        entries.forEach(entry => this.traverseEntry(entry));
     }
 
     traverseEntry(entry) {
