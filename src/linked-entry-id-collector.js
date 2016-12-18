@@ -7,8 +7,8 @@ module.exports = class LinkedEntryIdCollector {
     }
 
     visitLink(link) {
-        if (link.sys.linkType === 'Entry') {
-            this.entryIds.add(link.sys.id);
+        if (link.linkType === 'Entry') {
+            this.entryIds.add(link.id);
         }
     }
 }
