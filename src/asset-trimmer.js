@@ -4,18 +4,19 @@ const EntryTraverser = require('./entry-traverser');
 const promiseAll = require('sync-p/all');
 
 module.exports = class AssetTrimmer {
-
-    trim(space, gracePeriod, isDryRun) {
+    constructor(gracePeriod, isDryRun) {
         this.gracePeriod = gracePeriod;
         this.isDryRun = isDryRun;
+    }
 
+    trim(space) {
         this.stats = {
             deletedCount: 0
         };
 
         return space
             .getEntries()
-            .then(entries => this.collectAssetIds(entries))
+            .then(entries => this.collectAssetIds(entries.items))
             .then(() => space.getAssets())
             .then(assets => this.deleteUnusedAssets(assets))
             .then(() => this.stats);
