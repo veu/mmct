@@ -8,14 +8,14 @@ program
     .option('-g, --grace-period [days]', 'keep anything younger than [days] days, default=5', 5);
 
 program
-    .command('assets')
+    .command('orphaned-assets')
     .description('delete unused assets')
     .action((space, token) => {
         if (typeof space !== 'string' || typeof token !== 'string') {
             console.log('Space ID or OAuth token missing. See --help for syntax.');
             return;
         }
-        commands.trimAssets(space, token, program.gracePeriod, program.dryRun);
+        commands.trimOrphanedAssets(space, token, program.gracePeriod, program.dryRun);
     });
 
 program

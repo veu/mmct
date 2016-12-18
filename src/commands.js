@@ -11,7 +11,7 @@ const reportError = (error) => {
 };
 
 module.exports = {
-    trimAssets: function (spaceId, token, gracePeriod, isDryRun) {
+    trimOrphanedAssets: function (spaceId, token, gracePeriod, isDryRun) {
         contentful.createClient({accessToken: token})
             .getSpace(spaceId)
             .then(space => {
