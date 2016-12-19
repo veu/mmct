@@ -1,5 +1,6 @@
 const AssetTrimmer = require('./asset-trimmer');
-const contentful = require('contentful-management');
+const contentful = require('./contentful');
+const contentfulManagement = require('contentful-management');
 const OutdatedEntryTrimmer = require('./outdated-entry-trimmer');
 
 const reportError = (error) => {
@@ -12,10 +13,13 @@ const reportError = (error) => {
 
 module.exports = {
     trimOrphanedAssets: function (spaceId, token, gracePeriod, isDryRun) {
-        contentful.createClient({accessToken: token})
+        contentful.config.gracePeriod = gracePeriod;
+        contentful.config.isDryRun = isDryRun;
+
+        contentfulManagement.createClient({accessToken: token})
             .getSpace(spaceId)
             .then(space => {
-                const assetTrimmer = new AssetTrimmer(gracePeriod, isDryRun);
+                const assetTrimmer = new AssetTrimmer();
                 return assetTrimmer.trim(space);
             })
             .then(stats => {
@@ -23,11 +27,15 @@ module.exports = {
             })
             .catch(reportError);
     },
+
     trimOutdatedEntries: function (spaceId, token, field, gracePeriod, isDryRun) {
-        contentful.createClient({accessToken: token})
+        contentful.config.gracePeriod = gracePeriod;
+        contentful.config.isDryRun = isDryRun;
+
+        contentfulManagement.createClient({accessToken: token})
             .getSpace(spaceId)
             .then(space => {
-                const trimmer = new OutdatedEntryTrimmer(field, gracePeriod, isDryRun);
+                const trimmer = new OutdatedEntryTrimmer(field);
                 return trimmer.trim(space);
             })
             .then(stats => {

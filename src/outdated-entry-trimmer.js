@@ -1,14 +1,13 @@
 const _ = require('lodash');
-const LinkedEntryIdCollector = require('./linked-entry-id-collector');
+const contentful = require('./contentful');
 const EntryLink = require('./entry-link');
 const EntryTraverser = require('./entry-traverser');
+const LinkedEntryIdCollector = require('./linked-entry-id-collector');
 const promiseAll = require('sync-p/all');
 
 module.exports = class OutdatedEntryTrimmer {
-    constructor(field, gracePeriod, isDryRun) {
+    constructor(field) {
         this.field = field;
-        this.gracePeriod = gracePeriod;
-        this.isDryRun = isDryRun;
     }
 
     trim(space) {
@@ -50,32 +49,21 @@ module.exports = class OutdatedEntryTrimmer {
         this.printEntryInfo(entry);
         this.stats.deletedCount ++;
 
-        if (this.isDryRun) {
-            return;
-        }
-
-        if (entry.isPublished()) {
-            return entry.unpublish().then(() => entry.delete());
-        }
-
-        return entry.delete();
+        return contentful.deleteEntity(entry);
     }
 
     printEntryInfo(entry) {
         const link = new EntryLink(entry);
-        const age = Math.floor(this.getAgeInDays(entry));
+        const age = Math.floor(contentful.getAgeInDays(entry));
         console.log(`deleting ${age} day${age>1 ? 's' : ''} old entry ${link}`);
-    }
-
-    getAgeInDays(entry) {
-        const now = new Date();
-        const updatedAt = new Date(entry.sys.updatedAt);
-        const diff = now - updatedAt;
-        return diff / (24 * 60 * 60 * 1000);
     }
 
     getOutdatedEntries() {
         return this.entries.filter(entry => {
+            if (contentful.isInGracePeriod(entry)) {
+                return false;
+            }
+
             if (!entry.fields[this.field]) {
                 return false;
             }

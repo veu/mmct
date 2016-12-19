@@ -1,14 +1,10 @@
 const AssetIdCollector = require('./asset-id-collector');
 const AssetLink = require('./asset-link');
+const contentful = require('./contentful');
 const EntryTraverser = require('./entry-traverser');
 const promiseAll = require('sync-p/all');
 
 module.exports = class AssetTrimmer {
-    constructor(gracePeriod, isDryRun) {
-        this.gracePeriod = gracePeriod;
-        this.isDryRun = isDryRun;
-    }
-
     trim(space) {
         this.stats = {
             deletedCount: 0
@@ -40,7 +36,7 @@ module.exports = class AssetTrimmer {
             return true;
         }
 
-        if (this.getAgeInDays(asset) <= this.gracePeriod) {
+        if (contentful.isInGracePeriod(asset)) {
             return true;
         }
         
@@ -49,29 +45,14 @@ module.exports = class AssetTrimmer {
 
     printAssetInfo(asset) {
         const link = new AssetLink(asset);
-        const age = Math.floor(this.getAgeInDays(asset));
+        const age = Math.floor(contentful.getAgeInDays(asset));
         console.log(`deleting ${age} day${age>1 ? 's' : ''} old asset ${link}`);
-    }
-
-    getAgeInDays(asset) {
-        const now = new Date();
-        const updatedAt = new Date(asset.sys.updatedAt);
-        const diff = now - updatedAt;
-        return diff / (24 * 60 * 60 * 1000);
     }
 
     deleteAsset(asset) {
         this.printAssetInfo(asset);
         this.stats.deletedCount ++;
 
-        if (this.isDryRun) {
-            return;
-        }
-
-        if (asset.isPublished()) {
-            return asset.unpublish().then(() => asset.delete());
-        }
-
-        return asset.delete();
+        return contentful.deleteEntity(asset);
     }
 }
