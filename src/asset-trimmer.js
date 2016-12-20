@@ -10,10 +10,9 @@ module.exports = class AssetTrimmer {
             deletedCount: 0
         };
 
-        return space
-            .getEntries()
-            .then(entries => this.collectAssetIds(entries.items))
-            .then(() => space.getAssets())
+        return contentful.getEntries(space)
+            .then(entries => this.collectAssetIds(entries))
+            .then(() => contentful.getAssets(space))
             .then(assets => this.deleteUnusedAssets(assets))
             .then(() => this.stats);
     }
@@ -27,7 +26,7 @@ module.exports = class AssetTrimmer {
     }
 
     deleteUnusedAssets(assets) {
-        const unusedAssets = assets.items.filter(asset => !this.isInUse(asset));
+        const unusedAssets = assets.filter(asset => !this.isInUse(asset));
         return promiseAll(unusedAssets.map(asset => this.deleteAsset(asset)));
     }
 

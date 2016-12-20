@@ -4,6 +4,26 @@ module.exports = {
         gracePeriod: 0,
     },
 
+    getAssets: function (space, assets = [], skip = 0, limit = 1000) {
+        return space.getAssets({skip, limit}).then(response => {
+            assets = assets.concat(response.items);
+            if (response.total > skip + limit) {
+                return this.getAssets(space, assets, skip + limit, limit);
+            }
+            return assets;
+        });
+    },
+
+    getEntries: function (space, entries = [], skip = 0, limit = 1000) {
+        return space.getEntries({skip, limit}).then(response => {
+            entries = entries.concat(response.items);
+            if (response.total > skip + limit) {
+                return this.getEntries(space, entries, skip + limit, limit);
+            }
+            return entries;
+        });
+    },
+
     deleteEntity: function (entity) {
         if (this.config.isDryRun) {
             return;

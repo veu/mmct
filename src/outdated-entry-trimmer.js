@@ -15,9 +15,8 @@ module.exports = class OutdatedEntryTrimmer {
             deletedCount: 0
         };  
 
-        return space
-            .getEntries()
-            .then(entries => this.entries = entries.items)
+        return contentful.getEntries(space)
+            .then(entries => this.entries = entries)
             .then(() => this.deleteEntries(this.getDeletableEntries()))
             .then(() => this.stats);
     }
