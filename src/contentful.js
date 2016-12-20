@@ -1,3 +1,25 @@
+const Promise = require('sync-p');
+
+const minDelay = 100;
+
+let lastDeletion = +new Date();
+
+const delay = function (time) {
+    return new Promise(resolve => setTimeout(() => resolve(true), time));
+};
+
+const deleteEntity = function (entity) {
+    const now = +new Date();
+
+    if (now - lastDeletion > minDelay) {
+        lastDeletion = now;
+        return entity.delete();
+    }
+
+    lastDeletion += minDelay;
+    return delay(lastDeletion - now).then(() => entity.delete());
+};
+
 module.exports = {
     config: {
         dryRun: false,
@@ -30,15 +52,15 @@ module.exports = {
         }
 
         if (entity.isPublished()) {
-            return entity.unpublish().then(() => entity.delete());
+            return entity.unpublish().then(() => deleteEntity(entity));
         }
 
-        return entity.delete();
+        return deleteEntity(entity);
     },
 
     getAgeInDays: function (entity) {
-        const updatedAt = new Date(entity.sys.updatedAt);
-        const age = (new Date() - updatedAt);
+        const updatedAt = +new Date(entity.sys.updatedAt);
+        const age = (+new Date() - updatedAt);
 
         return age / (24 * 60 * 60 * 1000);
     },
