@@ -9,7 +9,8 @@
     "sync-p": "^1.1.2"
   },
   "devDependencies": {
-    "jasmine": "^2.5.2"
+    "jasmine": "^2.5.2",
+    "mock-require": "^2.0.2"
   },
   "bin": {
     "contentful-trim": "./index.js"

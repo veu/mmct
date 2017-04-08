@@ -1,5 +1,13 @@
 const _ = require('lodash');
 
+const user = {
+    sys: {
+        type: 'Link',
+        linkType: 'User',
+        id: 'user123'
+    }
+};
+
 const basicEntry = {
     sys: {
         space: {
@@ -13,29 +21,11 @@ const basicEntry = {
         type: 'Entry',
         createdAt: '2016-11-20T20:15:52.086Z',
         updatedAt: '2016-12-14T22:26:44.923Z',
-        createdBy: {
-            sys: {
-                type: 'Link',
-                linkType: 'User',
-                id: 'user123'
-            }
-        },
-        updatedBy: {
-            sys: {
-                type: 'Link',
-                linkType: 'User',
-                id: 'user123'
-            }
-        },
+        createdBy: user,
+        updatedBy: user,
         publishedCounter: 3,
         version: 14,
-        publishedBy: {
-            sys: {
-                type: 'Link',
-                linkType: 'User',
-                id: 'user123'
-            }
-        },
+        publishedBy: user,
         publishedVersion: 13,
         firstPublishedAt: '2016-11-20T20:16:18.590Z',
         publishedAt: '2016-12-14T22:26:44.894Z',

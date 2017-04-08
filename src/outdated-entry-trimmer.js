@@ -1,6 +1,5 @@
 const _ = require('lodash');
 const contentful = require('./contentful');
-const EntryLink = require('./entry-link');
 const EntryTraverser = require('./entry-traverser');
 const LinkedEntryIdCollector = require('./linked-entry-id-collector');
 const promiseAll = require('sync-p/all');
@@ -45,16 +44,9 @@ module.exports = class OutdatedEntryTrimmer {
     }
 
     deleteEntry(entry) {
-        this.printEntryInfo(entry);
         this.stats.deletedCount ++;
 
         return contentful.deleteEntity(entry);
-    }
-
-    printEntryInfo(entry) {
-        const link = new EntryLink(entry);
-        const age = Math.floor(contentful.getAgeInDays(entry));
-        console.log(`deleting ${age} day${age>1 ? 's' : ''} old entry ${link}`);
     }
 
     getOutdatedEntries() {
@@ -76,9 +68,5 @@ module.exports = class OutdatedEntryTrimmer {
         const linkedEntryIdCollector = new LinkedEntryIdCollector();
         entryTraverser.traverse(entries, linkedEntryIdCollector);
         return linkedEntryIdCollector.entryIds;
-    }
-
-    filterUsedEntries(deletableEntries, entries) {
-
     }
 }

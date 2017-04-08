@@ -1,3 +1,4 @@
+const EntityLink = require('./entity-link');
 const Promise = require('sync-p');
 
 const minDelay = 100;
@@ -47,6 +48,11 @@ module.exports = {
     },
 
     deleteEntity: function (entity) {
+        const link = new EntityLink(entity);
+        const age = Math.floor(this.getAgeInDays(entity));
+
+        console.log(`deleting ${age} day${age>1 ? 's' : ''} old ${entity.sys.type.toLowerCase()} ${link}`);
+
         if (this.config.isDryRun) {
             return;
         }
