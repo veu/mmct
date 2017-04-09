@@ -41,11 +41,17 @@ const basicEntry = {
 };
 
 class MockEntryBuilder {
-    constructor(id) {
+    constructor(contentTypeId) {
         this.entry = _.cloneDeep(basicEntry);
-        this.entry.sys.contentType.sys.id = id;
+        this.entry.sys.contentType.sys.id = contentTypeId;
 
         this.language = 'en-US';
+    }
+
+    withId(id) {
+        this.entry.sys.id = id;
+
+        return this;
     }
 
     withField(name, value) {
@@ -53,6 +59,7 @@ class MockEntryBuilder {
             this.entry.fields[name] = {};
         }
         this.entry.fields[name][this.language] = value;
+
         return this;
     }
 
@@ -66,7 +73,7 @@ class MockEntryBuilder {
 }
 
 module.exports = {
-    create: function (id) {
-        return new MockEntryBuilder(id);
+    create: function (contentTypeId) {
+        return new MockEntryBuilder(contentTypeId);
     }
 }

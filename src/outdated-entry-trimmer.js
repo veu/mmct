@@ -5,8 +5,8 @@ const LinkedEntryIdCollector = require('./linked-entry-id-collector');
 const promiseAll = require('sync-p/all');
 
 module.exports = class OutdatedEntryTrimmer {
-    constructor(field) {
-        this.field = field;
+    constructor(fieldName) {
+        this.fieldName = fieldName;
     }
 
     trim(space) {
@@ -55,11 +55,11 @@ module.exports = class OutdatedEntryTrimmer {
                 return false;
             }
 
-            if (!entry.fields[this.field]) {
+            if (!entry.fields[this.fieldName]) {
                 return false;
             }
 
-            return _.every(entry.fields[this.field], date => new Date(date) < new Date());
+            return _.every(entry.fields[this.fieldName], date => new Date(date) < new Date());
         });
     }
 
@@ -67,6 +67,7 @@ module.exports = class OutdatedEntryTrimmer {
         const entryTraverser = new EntryTraverser();
         const linkedEntryIdCollector = new LinkedEntryIdCollector();
         entryTraverser.traverse(entries, linkedEntryIdCollector);
+
         return linkedEntryIdCollector.entryIds;
     }
 }
