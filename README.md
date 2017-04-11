@@ -8,7 +8,7 @@ It provides two commands:
 
 # Installation
 
-* Install node >= 6
+* Install node >= 7.6
 * run npm install
 
 # How to run

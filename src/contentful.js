@@ -21,9 +21,16 @@ const deleteEntity = function (entity) {
     return delay(lastDeletion - now).then(() => entity.delete());
 };
 
+const getAgeInDays = function (entity) {
+    const updatedAt = +new Date(entity.sys.updatedAt);
+    const age = (+new Date() - updatedAt);
+
+    return age / (24 * 60 * 60 * 1000);
+};
+
 module.exports = {
     config: {
-        dryRun: false,
+        isDryRun: false,
         gracePeriod: 0,
     },
 
@@ -49,7 +56,7 @@ module.exports = {
 
     deleteEntity: function (entity) {
         const link = new EntityLink(entity);
-        const age = Math.floor(this.getAgeInDays(entity));
+        const age = Math.floor(getAgeInDays(entity));
 
         console.log(`deleting ${age} day${age>1 ? 's' : ''} old ${entity.sys.type.toLowerCase()} ${link}`);
 
@@ -64,14 +71,7 @@ module.exports = {
         return deleteEntity(entity);
     },
 
-    getAgeInDays: function (entity) {
-        const updatedAt = +new Date(entity.sys.updatedAt);
-        const age = (+new Date() - updatedAt);
-
-        return age / (24 * 60 * 60 * 1000);
-    },
-
     isInGracePeriod: function (entity) {
-        return this.getAgeInDays(entity) <= this.config.gracePeriod;
+        return getAgeInDays(entity) <= this.config.gracePeriod;
     }
 };
