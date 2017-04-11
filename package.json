@@ -8,7 +8,10 @@
     "lodash": "^4.16.4",
     "sync-p": "^1.1.2"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "jasmine": "^2.5.2",
+    "mock-require": "^2.0.2"
+  },
   "bin": {
     "contentful-trim": "./index.js"
   },

@@ -4,8 +4,8 @@ module.exports = class AssetIdCollector {
     }
 
     visitLink(link) {
-        if (link.sys.linkType === 'Asset') {
-            this.assetIds.add(link.sys.id);
+        if (link.linkType === 'Asset') {
+            this.assetIds.add(link.id);
         }
     }
 }
