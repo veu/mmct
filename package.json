@@ -1,7 +1,11 @@
 {
-  "name": "contentful-trim",
+  "name": "MMCT",
   "version": "1.0.0",
   "description": "Unofficial tools for working with contentful",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/veu/mmct.git"
+  },
   "dependencies": {
     "contentful-management": "^1.2.1",
     "lodash": "^4.16.4",
@@ -18,6 +22,6 @@
   "bin": {
     "mmct-trim": "./bin/trim.js"
   },
-  "author": "Rebecca",
+  "author": "Rebecca König",
   "license": "MIT"
 }
