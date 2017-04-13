@@ -34,6 +34,17 @@ module.exports = {
         gracePeriod: 0,
     },
 
+    getSpace: async function (spaceId, accessToken) {
+        const contentfulManagement = require('contentful-management');
+        const client = contentfulManagement.createClient({accessToken});
+
+        try {
+            return await client.getSpace(spaceId);
+        } catch (e) {
+            throw new Error('Could not connect to space. Please check your credentials.');
+        }
+    },
+
     getAssets: async function (space, skip = 0, limit = 1000) {
         const response = await space.getAssets({skip, limit});
 

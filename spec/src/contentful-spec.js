@@ -1,4 +1,5 @@
 const contentful = require('../../src/contentful');
+const mock = require('mock-require');
 const MockEntryBuilder = require('../mock/mock-entry-builder');
 const Promise = require('sync-p');
 
@@ -14,6 +15,54 @@ describe('contentful helper', function () {
             );
         };
     }
+
+    describe('getSpace', function () {
+        afterEach(function () {
+            mock.stopAll();
+        });
+
+        it('passes credentials', testAsync(async function () {
+            const client = {
+                getSpace: jasmine.createSpy('client.getSpace')
+            };
+
+            const contentfulManagement = {
+                createClient: jasmine.createSpy('contentfulManagement.createClient').and.returnValue(client)
+            };
+
+            mock('contentful-management', contentfulManagement);
+            const contentful = require('../../src/contentful');
+
+            const spaceId = 'space-id';
+            const accessToken = 'token';
+
+            await contentful.getSpace(spaceId, accessToken);
+
+            expect(contentfulManagement.createClient).toHaveBeenCalledWith({accessToken});
+            expect(client.getSpace).toHaveBeenCalledWith(spaceId);
+
+        }));
+
+        it('throws proper error if connecting to space fails', testAsync(async function () {
+            const originalError = 'anything';
+            const client = {
+                getSpace: jasmine.createSpy('client.getSpace').and.throwError(originalError)
+            };
+
+            const contentfulManagement = {
+                createClient: jasmine.createSpy('contentfulManagement.createClient').and.returnValue(client)
+            };
+
+            mock('contentful-management', contentfulManagement);
+            const contentful = require('../../src/contentful');
+
+            try {
+                await contentful.getSpace('space-id', 'token');
+            } catch (e) {
+                expect(e.message).not.toEqual(originalError);
+            }
+        }));
+    });
 
     for (const method of ['getAssets', 'getEntries']) {
         describe(method, function () {

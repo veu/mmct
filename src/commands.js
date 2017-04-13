@@ -1,6 +1,5 @@
 const AssetTrimmer = require('./asset-trimmer');
 const contentful = require('./contentful');
-const contentfulManagement = require('contentful-management');
 const OutdatedEntryTrimmer = require('./outdated-entry-trimmer');
 
 const reportError = (error) => {
@@ -8,39 +7,36 @@ const reportError = (error) => {
         error = JSON.parse(error.message);
     } catch (ignore) {}
     console.error('Error: ' + error.message);
-    console.log(error);
 };
 
 module.exports = {
-    trimOrphanedAssets: function (spaceId, token, gracePeriod, isDryRun) {
+    trimOrphanedAssets: async function (spaceId, token, gracePeriod, isDryRun) {
         contentful.config.gracePeriod = gracePeriod;
         contentful.config.isDryRun = isDryRun;
 
-        contentfulManagement.createClient({accessToken: token})
-            .getSpace(spaceId)
-            .then(space => {
-                const assetTrimmer = new AssetTrimmer();
-                return assetTrimmer.trim(space);
-            })
-            .then(stats => {
-                console.log(`Deleted ${stats.deletedCount} unused assets.`);
-            })
-            .catch(reportError);
+        try {
+            const space = await contentful.getSpace(spaceId, token);
+            const assetTrimmer = new AssetTrimmer();
+            const stats = assetTrimmer.trim(space);
+
+            console.log(`Deleted ${stats.deletedCount} unused assets.`);
+        } catch (e) {
+            reportError(e);
+        }
     },
 
-    trimOutdatedEntries: function (spaceId, token, field, gracePeriod, isDryRun) {
+    trimOutdatedEntries: async function (spaceId, token, field, gracePeriod, isDryRun) {
         contentful.config.gracePeriod = gracePeriod;
         contentful.config.isDryRun = isDryRun;
 
-        contentfulManagement.createClient({accessToken: token})
-            .getSpace(spaceId)
-            .then(space => {
-                const trimmer = new OutdatedEntryTrimmer(field);
-                return trimmer.trim(space);
-            })
-            .then(stats => {
-                console.log(`Deleted ${stats.deletedCount} entries.`);
-            })
-            .catch(reportError);
+        try {
+            const space = await contentful.getSpace(spaceId, token);
+            const entryTrimmer = new OutdatedEntryTrimmer(field);
+            const stats = entryTrimmer.trim(space);
+
+            console.log(`Deleted ${stats.deletedCount} entries.`);
+        } catch (e) {
+            reportError(e);
+        }
     }
 };
