@@ -34,27 +34,31 @@ module.exports = {
         gracePeriod: 0,
     },
 
-    getAssets: function (space, assets = [], skip = 0, limit = 1000) {
-        return space.getAssets({skip, limit}).then(response => {
-            assets = assets.concat(response.items);
-            if (response.total > skip + limit) {
-                return this.getAssets(space, assets, skip + limit, limit);
-            }
-            return assets;
-        });
+    getAssets: async function (space, skip = 0, limit = 1000) {
+        const response = await space.getAssets({skip, limit});
+
+        if (skip + limit >= response.total) {
+            return response.items;
+        }
+
+        const assets = await this.getAssets(space, skip + limit, limit);
+
+        return response.items.concat(assets);
     },
 
-    getEntries: function (space, entries = [], skip = 0, limit = 1000) {
-        return space.getEntries({skip, limit}).then(response => {
-            entries = entries.concat(response.items);
-            if (response.total > skip + limit) {
-                return this.getEntries(space, entries, skip + limit, limit);
-            }
-            return entries;
-        });
+    getEntries: async function (space, skip = 0, limit = 1000) {
+        const response = await space.getEntries({skip, limit});
+
+        if (skip + limit >= response.total) {
+            return response.items;
+        }
+
+        const entries = await this.getEntries(space, skip + limit, limit);
+
+        return response.items.concat(entries);
     },
 
-    deleteEntity: function (entity) {
+    deleteEntity: async function (entity) {
         const link = new EntityLink(entity);
         const age = Math.floor(getAgeInDays(entity));
 
@@ -65,10 +69,10 @@ module.exports = {
         }
 
         if (entity.isPublished()) {
-            return entity.unpublish().then(() => deleteEntity(entity));
+            await entity.unpublish();
         }
 
-        return deleteEntity(entity);
+        await deleteEntity(entity);
     },
 
     isInGracePeriod: function (entity) {

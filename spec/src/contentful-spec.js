@@ -38,7 +38,7 @@ describe('contentful helper', function () {
                 skip = 3;
                 limit = 5;
 
-                await contentful[method](space, [], skip, limit);
+                await contentful[method](space, skip, limit);
 
                 expect(space[method]).toHaveBeenCalledWith({skip, limit});
             }));
@@ -54,7 +54,7 @@ describe('contentful helper', function () {
                     })
                 );
 
-                const assets = await contentful[method](space, [], 0, 2);
+                const assets = await contentful[method](space, 0, 2);
 
                 expect(assets).toEqual(['a', 'b', 'c', 'd']);
             }));
