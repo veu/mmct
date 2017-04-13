@@ -1,19 +1,19 @@
 {
   "name": "contentful-trim",
   "version": "1.0.0",
-  "description": "",
+  "description": "Unofficial tools for working with contentful",
   "dependencies": {
-    "commander": "^2.9.0",
     "contentful-management": "^1.2.1",
     "lodash": "^4.16.4",
-    "sync-p": "^1.1.2"
+    "sync-p": "^1.1.2",
+    "yargs": "^7.0.2"
   },
   "devDependencies": {
     "jasmine": "^2.5.2",
     "mock-require": "^2.0.2"
   },
   "bin": {
-    "contentful-trim": "./index.js"
+    "contentful-trim": "./bin/trim.js"
   },
   "author": "Rebecca",
   "license": "MIT"

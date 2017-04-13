@@ -16,7 +16,7 @@ It provides two commands:
 ## Deleting outdated entries
 
 ```
-node index.js outdated-entries <space-id> <auth-token> <expiry-field> [-g <grace-period>] [--dry-run]
+node bin/trim.js outdated-entries <space-id> <auth-token> <expiry-field> [--grace-period <grace-period>] [--dry-run]
 ```
 
 * **expiry-filed** The name of field containing the expiration date of the entry.
@@ -26,7 +26,7 @@ node index.js outdated-entries <space-id> <auth-token> <expiry-field> [-g <grace
 ## Deleting orphaned assets
 
 ```
-node index.js orphaned-assets <space-id> <auth-token> [-g <grace-period>] [--dry-run]
+node bin/trim.js orphaned-assets <space-id> <auth-token> [--grace-period <grace-period>] [--dry-run]
 ```
 
 * **expiry-filed** The name of field containing the expiration date of the entry.
