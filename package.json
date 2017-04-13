@@ -12,8 +12,11 @@
     "jasmine": "^2.5.2",
     "mock-require": "^2.0.2"
   },
+  "engines": {
+     "node": ">=7.6"
+  },
   "bin": {
-    "contentful-trim": "./bin/trim.js"
+    "mmct-trim": "./bin/trim.js"
   },
   "author": "Rebecca",
   "license": "MIT"

@@ -1,34 +1,39 @@
-This is a small tool to delete expired scheduled content from contentful.
-It provides two commands:
+MMCT
+==============================
 
-1. **outdated-entries** to delete entries with an expiry date in the past
-2. **orphaned-assets** to delete orphaned assets not linked to an entry
+Unofficial toolset for contentful space management.
 
-**Important**: This is a development version, use at your own risk.
-
-# Installation
+## Installation
 
 * Install node >= 7.6
-* run npm install
+* run `npm install -g https://github.com/veu/contentful-trim`
 
-# How to run
+## Usage
 
-## Deleting outdated entries
+### Trimming scheduled content
+
+The following commands help deleting expired scheduled content from contentful.
+Add an expiry date to your content model and remove entries from the space once they expire.
+
+#### Delete outdated entries
+
+Deletes all entries with an expiry date in the past and entries linked in expired entries and not anywhere else.
 
 ```
-node bin/trim.js outdated-entries <space-id> <auth-token> <expiry-field> [--grace-period <grace-period>] [--dry-run]
+mmct-trim outdated-entries <space-id> <auth-token> <expiry-field> [--grace-period <grace-period>] [--dry-run]
 ```
 
-* **expiry-filed** The name of field containing the expiration date of the entry.
-* **grace-period** Number of days deleted entries haven’t been updated. This makes sure that we don’t delete entries that have just been created.
+* **expiry-field** The name of the field containing the expiration date of the entry.
+* **grace-period** Keep all entries that have been updated within the last `<grace-period>` days. Default: 5
 * **--dry-run** Don’t delete anything but list what would have been deleted.
 
-## Deleting orphaned assets
+#### Delete orphaned assets
+
+Deletes all assets that are not linked in any entries. Best used after the previous command.
 
 ```
-node bin/trim.js orphaned-assets <space-id> <auth-token> [--grace-period <grace-period>] [--dry-run]
+mmct-trim orphaned-assets <space-id> <auth-token> [--grace-period <grace-period>] [--dry-run]
 ```
 
-* **expiry-filed** The name of field containing the expiration date of the entry.
-* **grace-period** Number of days deleted entries haven’t been updated. This makes sure that we don’t delete entries that have just been created.
+* **grace-period** Keep all entries that have been updated within the last `<grace-period>` days. Default: 5
 * **--dry-run** Don’t delete anything but list what would have been deleted.
