@@ -24,6 +24,9 @@ describe('OutdatedEntryTrimmer', function () {
     }
 
     beforeEach(function () {
+        jasmine.clock().install();
+        jasmine.clock().mockDate();
+
         entries = [];
 
         contentful.deleteEntity = jasmine.createSpy('contentful.deleteEntity');
@@ -46,6 +49,7 @@ describe('OutdatedEntryTrimmer', function () {
 
     afterEach(function () {
         mock.stopAll();
+        jasmine.clock().uninstall();
     });
 
     it('deletes outdated entries', function () {

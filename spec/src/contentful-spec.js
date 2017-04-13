@@ -144,6 +144,15 @@ describe('contentful helper', function () {
 
         const entry = MockEntryBuilder.create().get();
 
+        beforeEach(function () {
+            jasmine.clock().install();
+            jasmine.clock().mockDate();
+        });
+
+        afterEach(function () {
+            jasmine.clock().uninstall();
+        });
+
         it('returns true if entity has been updated in grace period', function () {
             entry.sys.updatedAt = new Date(new Date() - 24 * 60 * 60 * 1000);
 
