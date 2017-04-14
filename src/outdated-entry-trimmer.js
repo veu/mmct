@@ -22,8 +22,10 @@ module.exports = class OutdatedEntryTrimmer {
 
     getDeletableEntries() {
         const outdatedEntries = this.getNestedEntries(this.getOutdatedEntries());
+
         const outdatedEntriesSet = new Set(outdatedEntries);
-        const currentEntries = new Set(this.getNestedEntries(this.entries.filter(entry => !outdatedEntriesSet.has(entry))));
+        const explicitlyCurrentEntries = this.entries.filter(entry => !outdatedEntriesSet.has(entry));
+        const currentEntries = new Set(this.getNestedEntries(explicitlyCurrentEntries));
         
         return outdatedEntries.filter(entry => !currentEntries.has(entry));
     }
@@ -32,7 +34,9 @@ module.exports = class OutdatedEntryTrimmer {
         let nestedEntries = parents;
         for (let linkedEntries; parents.length > 0; parents = linkedEntries) {
             const linkedEntryIds = this.getNestedEntryIds(parents);
-            linkedEntries = this.entries.filter(entry => linkedEntryIds.has(entry.sys.id));
+            linkedEntries = this.entries.filter(entry => {
+                return linkedEntryIds.has(entry.sys.id) && !nestedEntries.includes(entry);
+            });
             nestedEntries = nestedEntries.concat(linkedEntries);
         }
 
