@@ -43,7 +43,7 @@ describe('AssetTrimmer', function () {
         mock('../../src/asset-id-collector', class { constructor() { return assetIdCollector; }});
         mock('../../src/entry-traverser', class { constructor() { return entryTraverser; }});
 
-        const AssetTrimmer = require('../../src/asset-trimmer');
+        const AssetTrimmer = require('../../src/orphaned-asset-trimmer');
         assetTrimmer = new AssetTrimmer();
     });
 
