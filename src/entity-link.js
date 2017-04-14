@@ -1,6 +1,11 @@
+const pathForEntity = {
+    'Asset': 'assets',
+    'Entry': 'entries'
+};
+
 module.exports = class EntityLink {
     constructor(entity) {
-        this.link = `https://app.contentful.com/spaces/${entity.sys.space.sys.id}/${entity.sys.type.toLowerCase()}s/${entity.sys.id}`; 
+        this.link = `https://app.contentful.com/spaces/${entity.sys.space.sys.id}/${pathForEntity[entity.sys.type]}/${entity.sys.id}`; 
     }
 
     toString() {
