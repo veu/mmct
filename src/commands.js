@@ -17,7 +17,7 @@ module.exports = {
         try {
             const space = await contentful.getSpace(spaceId, token);
             const assetTrimmer = new AssetTrimmer();
-            const stats = assetTrimmer.trim(space);
+            const stats = await assetTrimmer.trim(space);
 
             console.log(`Deleted ${stats.deletedCount} unused assets.`);
         } catch (e) {
@@ -32,7 +32,7 @@ module.exports = {
         try {
             const space = await contentful.getSpace(spaceId, token);
             const entryTrimmer = new OutdatedEntryTrimmer(field);
-            const stats = entryTrimmer.trim(space);
+            const stats = await entryTrimmer.trim(space);
 
             console.log(`Deleted ${stats.deletedCount} entries.`);
         } catch (e) {
