@@ -3,7 +3,7 @@ const contentful = require('./contentful');
 const EntryTraverser = require('./entry-traverser');
 const promiseAll = require('sync-p/all');
 
-module.exports = class AssetTrimmer {
+module.exports = class OrphanedAssetTrimmer {
     trim(space) {
         this.stats = {
             deletedCount: 0

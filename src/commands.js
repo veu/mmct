@@ -1,4 +1,4 @@
-const AssetTrimmer = require('./asset-trimmer');
+const OrphanedAssetTrimmer = require('./orphaned-asset-trimmer');
 const contentful = require('./contentful');
 const OutdatedEntryTrimmer = require('./outdated-entry-trimmer');
 
@@ -16,10 +16,10 @@ module.exports = {
 
         try {
             const space = await contentful.getSpace(spaceId, token);
-            const assetTrimmer = new AssetTrimmer();
-            const stats = assetTrimmer.trim(space);
+            const assetTrimmer = new OrphanedAssetTrimmer();
+            const stats = await assetTrimmer.trim(space);
 
-            console.log(`Deleted ${stats.deletedCount} unused assets.`);
+            console.log(`Deleted ${stats.deletedCount} orphaned assets.`);
         } catch (e) {
             reportError(e);
         }
@@ -32,9 +32,9 @@ module.exports = {
         try {
             const space = await contentful.getSpace(spaceId, token);
             const entryTrimmer = new OutdatedEntryTrimmer(field);
-            const stats = entryTrimmer.trim(space);
+            const stats = await entryTrimmer.trim(space);
 
-            console.log(`Deleted ${stats.deletedCount} entries.`);
+            console.log(`Deleted ${stats.deletedCount} outdated entries.`);
         } catch (e) {
             reportError(e);
         }
