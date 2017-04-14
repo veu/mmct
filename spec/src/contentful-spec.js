@@ -1,7 +1,6 @@
 const contentful = require('../../src/contentful');
 const mock = require('mock-require');
 const MockEntryBuilder = require('../mock/mock-entry-builder');
-const Promise = require('sync-p');
 
 describe('contentful helper', function () {
     function testAsync(runAsync) {
@@ -176,11 +175,11 @@ describe('contentful helper', function () {
 
             deletionPromise = contentful.deleteEntity(entry);
 
-            jasmine.clock().tick(99);
-
             expect(entry.delete).not.toHaveBeenCalled();
 
-            jasmine.clock().tick(1);
+            jasmine.clock().tick(100);
+
+            await deletionPromise;
 
             expect(entry.delete).toHaveBeenCalled();
 

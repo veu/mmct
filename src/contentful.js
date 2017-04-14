@@ -9,16 +9,19 @@ const delay = function (time) {
     return new Promise(resolve => setTimeout(() => resolve(true), time));
 };
 
-const deleteEntity = function (entity) {
+const deleteEntity = async function (entity) {
     const now = +new Date();
 
     if (now - lastDeletion > minDelay) {
         lastDeletion = now;
-        return entity.delete();
+        await entity.delete();
+
+        return;
     }
 
     lastDeletion += minDelay;
-    return delay(lastDeletion - now).then(() => entity.delete());
+    await delay(lastDeletion - now);
+    await entity.delete();
 };
 
 const getAgeInDays = function (entity) {

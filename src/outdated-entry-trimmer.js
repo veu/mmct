@@ -9,15 +9,15 @@ module.exports = class OutdatedEntryTrimmer {
         this.fieldName = fieldName;
     }
 
-    trim(space) {
+    async trim(space) {
         this.stats = {
             deletedCount: 0
         };  
 
-        return contentful.getEntries(space)
-            .then(entries => this.entries = entries)
-            .then(() => this.deleteEntries(this.getDeletableEntries()))
-            .then(() => this.stats);
+        this.entries = await contentful.getEntries(space);
+        this.deleteEntries(this.getDeletableEntries());
+
+        return this.stats;
     }
 
     getDeletableEntries() {

@@ -4,16 +4,15 @@ const EntryTraverser = require('./entry-traverser');
 const promiseAll = require('sync-p/all');
 
 module.exports = class OrphanedAssetTrimmer {
-    trim(space) {
+    async trim(space) {
         this.stats = {
             deletedCount: 0
         };
 
-        return contentful.getEntries(space)
-            .then(entries => this.collectAssetIds(entries))
-            .then(() => contentful.getAssets(space))
-            .then(assets => this.deleteUnusedAssets(assets))
-            .then(() => this.stats);
+        this.collectAssetIds(await contentful.getEntries(space));
+        await this.deleteUnusedAssets(await contentful.getAssets(space));
+
+        return this.stats;
     }
 
     collectAssetIds(entries) {
