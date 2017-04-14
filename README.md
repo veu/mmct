@@ -6,7 +6,7 @@ Unofficial toolset for contentful space management.
 ## Installation
 
 * Install node >= 7.6
-* run `npm install -g https://github.com/veu/contentful-trim`
+* run `npm install -g https://github.com/veu/mmct`
 
 ## Usage
 
