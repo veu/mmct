@@ -1,5 +1,7 @@
-const OrphanedAssetTrimmer = require('./orphaned-asset-trimmer');
 const contentful = require('./contentful');
+const getStdin = require('get-stdin');
+const EntryWriter = require('./entry-writer');
+const OrphanedAssetTrimmer = require('./orphaned-asset-trimmer');
 const OutdatedEntryTrimmer = require('./outdated-entry-trimmer');
 
 const reportError = (error) => {
@@ -10,6 +12,21 @@ const reportError = (error) => {
 };
 
 module.exports = {
+    fillDefaultValue: async function (spaceId, token, modelId, field) {
+        try {
+            console.log('Reading from stdin…');
+            const value = await getStdin();
+            const space = await contentful.getSpace(spaceId, token);
+            const entryWriter = new EntryWriter();
+            const stats = await entryWriter.fillDefaultValue(space, modelId, field, value);
+
+            console.log(`Updated ${stats.updatedCount} entries.`);
+
+        } catch (e) {
+            reportError(e);
+        }
+    },
+
     trimOrphanedAssets: async function (spaceId, token, gracePeriod, isDryRun) {
         contentful.config.gracePeriod = gracePeriod;
         contentful.config.isDryRun = isDryRun;

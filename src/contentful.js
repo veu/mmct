@@ -112,5 +112,14 @@ module.exports = {
 
     isInGracePeriod: function (entity) {
         return getAgeInDays(entity) <= this.config.gracePeriod;
-    }
+    },
+
+    updateEntity: async function (entity) {
+        const link = new EntityLink(entity);
+
+        console.log(`updating ${entity.sys.type.toLowerCase()} ${link}`);
+
+        await apiIsReady();
+        await entity.update();
+    },
 };

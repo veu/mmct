@@ -6,7 +6,7 @@ describe('LinkedEntryIdCollector', function () {
         const linkedEntryIdCollector = new LinkedEntryIdCollector();
 
         const entry = MockEntryBuilder.create().withLink('testLink', 'Entry', '123').get();
-        const link = entry.fields['testLink']['en-US'].sys;
+        const link = entry.fields['testLink']['en'].sys;
 
         linkedEntryIdCollector.visitLink(link);
 

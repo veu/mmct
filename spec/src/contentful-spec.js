@@ -252,7 +252,39 @@ describe('contentful helper', function () {
 
             expect(awaiting.delay).toHaveBeenCalledTimes(2);
             expect(entry.unpublish).toHaveBeenCalled();
+        }));
+    });
 
+    describe('updateEntity', function () {
+        let entry;
+
+        beforeEach(function () {
+            spyOn(console, 'log');
+
+            entry = MockEntryBuilder.create().get();
+        });
+
+        it('logs and updates entity', testAsync(async function () {
+            entry.update = jasmine.createSpy('entry.update');
+
+            await contentful.updateEntity(entry);
+
+            expect(console.log).toHaveBeenCalled();
+            expect(entry.update).toHaveBeenCalled();
+        }));
+
+        it('delays update to avoid hitting API rate limit', testAsync(async function () {
+            entry.update = jasmine.createSpy('entry.update');
+
+            await contentful.updateEntity(entry);
+
+            expect(awaiting.delay).not.toHaveBeenCalled();
+            expect(entry.update).toHaveBeenCalled();
+
+            await contentful.updateEntity(entry);
+
+            expect(awaiting.delay).toHaveBeenCalled();
+            expect(entry.update).toHaveBeenCalledTimes(2);
         }));
     });
 

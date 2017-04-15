@@ -32,10 +32,10 @@ const basicAsset = {
     },
     fields: {
         title: {
-            'en-US': 'Mock Asset'
+            'en': 'Mock Asset'
         },
         file: {
-            'en-US': {
+            'en': {
                 url: '//images.contentful.com/a/b/c/asset-name.png',
                 details: {
                     size: 1234,
@@ -55,7 +55,7 @@ class MockAssetBuilder {
     constructor() {
         this.asset = _.cloneDeep(basicAsset);
 
-        this.language = 'en-US';
+        this.language = 'en';
     }
 
     withId(id) {

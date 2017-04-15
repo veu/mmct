@@ -1,7 +1,7 @@
 MMCT
 ==============================
 
-Unofficial toolset for contentful space management.
+Toolset for [contentful](https://www.contentful.com/) space management.
 
 ## Installation
 
@@ -12,7 +12,7 @@ Unofficial toolset for contentful space management.
 
 ### Trimming scheduled content
 
-The following commands help deleting expired scheduled content from contentful.
+The following commands delete expired scheduled content from contentful.
 Add an expiry date to your content model and remove entries from the space once they expire.
 
 #### Delete outdated entries
@@ -20,11 +20,11 @@ Add an expiry date to your content model and remove entries from the space once 
 Deletes all entries with an expiry date in the past and entries linked in expired entries and not anywhere else.
 
 ```
-mmct-trim outdated-entries <space-id> <auth-token> <expiry-field> [--grace-period <grace-period>] [--dry-run]
+mmct-trim outdated-entries <space-id> <auth-token> <expiry-field> [--grace-period <days>] [--dry-run]
 ```
 
 * **expiry-field** The name of the field containing the expiration date of the entry.
-* **grace-period** Keep all entries that have been updated within the last `<grace-period>` days. Default: 5
+* **--grace-period** Keep all entries that have been updated within the last `<days>`. Default: 5
 * **--dry-run** Don’t delete anything but list what would have been deleted.
 
 #### Delete orphaned assets
@@ -32,8 +32,25 @@ mmct-trim outdated-entries <space-id> <auth-token> <expiry-field> [--grace-perio
 Deletes all assets that are not linked in any entries. Best used after the previous command.
 
 ```
-mmct-trim orphaned-assets <space-id> <auth-token> [--grace-period <grace-period>] [--dry-run]
+mmct-trim orphaned-assets <space-id> <auth-token> [--grace-period <days>] [--dry-run]
 ```
 
-* **grace-period** Keep all entries that have been updated within the last `<grace-period>` days. Default: 5
+* **--grace-period** Keep all entries that have been updated within the last `<days>`. Default: 5
 * **--dry-run** Don’t delete anything but list what would have been deleted.
+
+### Filling entries
+
+The following commands enter data for multiple entries at once.
+
+#### Fill default value
+
+Added a text field to a content model and need to update existing entries?
+Use this command to add a value for all entries of the model that are missing the field.
+If the field is localized, all language versions will be set to the same value.
+
+```
+echo -n "value" | mmct-fill default-value <space-id> <auth-token> <content-model-id> <field>
+```
+
+* **content-model-id** Content model ID of the entries to update.
+* **field** Name of the field to fill.

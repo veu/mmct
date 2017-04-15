@@ -6,7 +6,7 @@ describe('AssetIdCollector', function () {
         const assetIdCollector = new AssetIdCollector();
 
         const entry = MockEntryBuilder.create().withLink('testLink', 'Asset', '123').get();
-        const link = entry.fields['testLink']['en-US'].sys;
+        const link = entry.fields['testLink']['en'].sys;
 
         assetIdCollector.visitLink(link);
 

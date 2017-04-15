@@ -9,6 +9,7 @@
   "dependencies": {
     "awaiting": "^2.0.1",
     "contentful-management": "^3.3.4",
+    "get-stdin": "^5.0.1",
     "lodash": "^4.16.4",
     "sync-p": "^1.1.2",
     "yargs": "^7.0.2"
@@ -21,6 +22,7 @@
     "node": ">=7.6"
   },
   "bin": {
+    "mmct-fill": "./bin/fill.js",
     "mmct-trim": "./bin/trim.js"
   },
   "author": "Rebecca König",
