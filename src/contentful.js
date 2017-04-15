@@ -1,28 +1,23 @@
+const _ = require('lodash');
+const awaiting = require('awaiting');
 const EntityLink = require('./entity-link');
-const Promise = require('sync-p');
 
 const minDelay = 100;
 
-let lastDeletion = +new Date();
+let lastApiCall = +new Date();
 
-const delay = function (time) {
-    return new Promise(resolve => setTimeout(() => resolve(true), time));
-};
-
-const deleteEntity = async function (entity) {
+async function apiIsReady() {
     const now = +new Date();
 
-    if (now - lastDeletion > minDelay) {
-        lastDeletion = now;
-        await entity.delete();
+    if (now - lastApiCall > minDelay) {
+        lastApiCall = now;
 
         return;
     }
 
-    lastDeletion += minDelay;
-    await delay(lastDeletion - now);
-    await entity.delete();
-};
+    lastApiCall += minDelay;
+    await awaiting.delay(lastApiCall - now);
+}
 
 const getAgeInDays = function (entity) {
     const updatedAt = +new Date(entity.sys.updatedAt);
@@ -31,8 +26,39 @@ const getAgeInDays = function (entity) {
     return age / (24 * 60 * 60 * 1000);
 };
 
+async function getAssets(space, options) {
+    await apiIsReady();
+    const response = await space.getAssets(options);
+
+    options.skip += options.limit;
+
+    if (options.skip >= response.total) {
+        return response.items;
+    }
+
+    const assets = await getAssets(space, options);
+
+    return response.items.concat(assets);
+}
+
+async function getEntries(space, options) {
+    await apiIsReady();
+    const response = await space.getEntries(options);
+
+    options.skip += options.limit;
+
+    if (options.skip >= response.total) {
+        return response.items;
+    }
+
+    const entries = await getEntries(space, options);
+
+    return response.items.concat(entries);
+}
+
 module.exports = {
     config: {
+        entityBatchLimit: 1000,
         isDryRun: false,
         gracePeriod: 0,
     },
@@ -41,6 +67,7 @@ module.exports = {
         const contentfulManagement = require('contentful-management');
         const client = contentfulManagement.createClient({accessToken});
 
+        await apiIsReady();
         try {
             return await client.getSpace(spaceId);
         } catch (e) {
@@ -48,28 +75,20 @@ module.exports = {
         }
     },
 
-    getAssets: async function (space, skip = 0, limit = 1000) {
-        const response = await space.getAssets({skip, limit});
+    getAssets: async function (space, options = {}) {
+        options = _.clone(options);
+        options.skip = options.skip || 0;
+        options.limit = this.config.entityBatchLimit;
 
-        if (skip + limit >= response.total) {
-            return response.items;
-        }
-
-        const assets = await this.getAssets(space, skip + limit, limit);
-
-        return response.items.concat(assets);
+        return await getAssets(space, options);
     },
 
-    getEntries: async function (space, skip = 0, limit = 1000) {
-        const response = await space.getEntries({skip, limit});
+    getEntries: async function (space, options = {}) {
+        options = _.clone(options);
+        options.skip = options.skip || 0;
+        options.limit = this.config.entityBatchLimit;
 
-        if (skip + limit >= response.total) {
-            return response.items;
-        }
-
-        const entries = await this.getEntries(space, skip + limit, limit);
-
-        return response.items.concat(entries);
+        return await getEntries(space, options);
     },
 
     deleteEntity: async function (entity) {
@@ -83,10 +102,12 @@ module.exports = {
         }
 
         if (entity.isPublished()) {
+            await apiIsReady();
             await entity.unpublish();
         }
 
-        await deleteEntity(entity);
+        await apiIsReady();
+        await entity.delete();
     },
 
     isInGracePeriod: function (entity) {
