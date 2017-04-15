@@ -37,7 +37,7 @@ module.exports = class OutdatedEntryTrimmer {
             linkedEntries = this.entries.filter(entry => {
                 return linkedEntryIds.has(entry.sys.id) && !nestedEntries.includes(entry);
             });
-            nestedEntries = nestedEntries.concat(linkedEntries);
+            nestedEntries = linkedEntries.concat(nestedEntries);
         }
 
         return nestedEntries;

@@ -218,4 +218,25 @@ describe('OutdatedEntryTrimmer', function () {
             expect(contentful.deleteEntity).toHaveBeenCalledWith(entry);
         }
     }));
+
+    it('deletes entries in reverse order to allow for resuming after failure', testAsync(async function () {
+        entries.push(
+            MockEntryBuilder.create().withId('outdated').withField('endDate', new Date(new Date() - 1)).get(),
+            MockEntryBuilder.create().withId('linked1').get(),
+            MockEntryBuilder.create().withId('linked2').get()
+        );
+
+        defineLinkedEntries(new Map([
+            ['outdated', ['linked1']],
+            ['linked1', ['linked2']]
+        ]));
+
+        await outdatedEntryTrimmer.trim(space);
+
+        entries.reverse();
+
+        const deletedEntries = contentful.deleteEntity.calls.allArgs().map(args => args[0]);
+
+        expect(deletedEntries).toEqual(entries);
+    }));
 });
