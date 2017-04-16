@@ -1,4 +1,5 @@
 const mock = require('mock-require');
+const contentful = require('../../src/contentful');
 const MockAssetBuilder = require('../mock/mock-asset-builder');
 
 describe('AssetTrimmer', function () {
@@ -23,14 +24,13 @@ describe('AssetTrimmer', function () {
 
     let assetTrimmer;
     let assetIdCollector;
-    let contentful = {};
     let entryTraverser;
 
     beforeEach(function () {
-        contentful.deleteEntity = jasmine.createSpy('contentful.deleteEntity');
-        contentful.getAssets = jasmine.createSpy('contentful.getAssets').and.returnValue(assets);
-        contentful.getEntries = jasmine.createSpy('contentful.getEntries').and.returnValue(new Promise((resolve) => resolve(entries)));
-        contentful.isInGracePeriod = jasmine.createSpy('contentful.isInGracePeriod').and.returnValue(false);
+        spyOn(contentful, 'deleteEntity');
+        spyOn(contentful, 'getAssets').and.returnValue(assets);
+        spyOn(contentful, 'getEntries').and.returnValue(new Promise((resolve) => resolve(entries)));
+        spyOn(contentful, 'isInGracePeriod').and.returnValue(false);
 
         entryTraverser = {
             traverse: jasmine.createSpy('entryTraverser.traverse')
@@ -38,7 +38,6 @@ describe('AssetTrimmer', function () {
 
         assetIdCollector = {};
 
-        mock('../../src/contentful', contentful);
         mock('../../src/asset-id-collector', class { constructor() { return assetIdCollector; }});
         mock('../../src/entry-traverser', class { constructor() { return entryTraverser; }});
 
@@ -80,7 +79,7 @@ describe('AssetTrimmer', function () {
 
     it('skips orphaned asset in grace period', testAsync(async function () {
         assetIdCollector.assetIds = new Set();
-        contentful.isInGracePeriod = jasmine.createSpy('contentful.isInGracePeriod').and.callFake(asset => asset === assets[1]);
+        contentful.isInGracePeriod.and.callFake(asset => asset === assets[1]);
 
         await assetTrimmer.trim(space);
         

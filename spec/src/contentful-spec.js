@@ -1,5 +1,4 @@
 const contentful = require('../../src/contentful');
-const mock = require('mock-require');
 const MockEntryBuilder = require('../mock/mock-entry-builder');
 
 describe('contentful helper', function () {
@@ -32,22 +31,19 @@ describe('contentful helper', function () {
     });
 
     describe('getSpace', function () {
-        afterEach(function () {
-            mock.stopAll();
-        });
+        let client;
+        let contentfulManagement;
 
-        it('passes credentials', testAsync(async function () {
-            const client = {
+        beforeEach(function () {
+            client = {
                 getSpace: jasmine.createSpy('client.getSpace')
             };
 
-            const contentfulManagement = {
-                createClient: jasmine.createSpy('contentfulManagement.createClient').and.returnValue(client)
-            };
+            contentfulManagement = require('contentful-management');
+            spyOn(contentfulManagement, 'createClient').and.callFake(() => client);
+        });
 
-            mock('contentful-management', contentfulManagement);
-            const contentful = require('../../src/contentful');
-
+        it('passes credentials', testAsync(async function () {
             const spaceId = 'space-id';
             const accessToken = 'token';
 
@@ -60,35 +56,17 @@ describe('contentful helper', function () {
 
         it('throws proper error if connecting to space fails', testAsync(async function () {
             const originalError = 'anything';
-            const client = {
-                getSpace: jasmine.createSpy('client.getSpace').and.throwError(originalError)
-            };
-
-            const contentfulManagement = {
-                createClient: jasmine.createSpy('contentfulManagement.createClient').and.returnValue(client)
-            };
-
-            mock('contentful-management', contentfulManagement);
-            const contentful = require('../../src/contentful');
+            client.getSpace.and.throwError(originalError);
 
             try {
                 await contentful.getSpace('space-id', 'token');
+                fail();
             } catch (e) {
                 expect(e.message).not.toEqual(originalError);
             }
         }));
 
         it('delays execution to avoid hitting API rate limit', testAsync(async function () {
-            const client = {
-                getSpace: jasmine.createSpy('client.getSpace')
-            };
-
-            const contentfulManagement = {
-                createClient: jasmine.createSpy('contentfulManagement.createClient').and.returnValue(client)
-            };
-
-            mock('contentful-management', contentfulManagement);
-
             await contentful.getSpace('space-id', 'token');
 
             expect(awaiting.delay).not.toHaveBeenCalled();
@@ -103,10 +81,17 @@ describe('contentful helper', function () {
 
     for (const method of ['getAssets', 'getEntries']) {
         describe(method, function () {
+            let space;
+
+            beforeEach(function () {
+                space = {
+                    [method]: jasmine.createSpy('space.' + method)
+                };
+            });
+
             it('returns entities for space', testAsync(async function () {
                 const expectedAssets = ['a'];
-                const space = {};
-                space[method] = jasmine.createSpy('space.' + method).and.returnValue(new Promise(resolve => {
+                space[method].and.returnValue(new Promise(resolve => {
                     resolve({items: expectedAssets, total: 1});
                 }));
 
@@ -116,8 +101,7 @@ describe('contentful helper', function () {
             }));
 
             it('passes paging parameters', testAsync(async function () {
-                const space = {};
-                space[method] = jasmine.createSpy('space.' + method).and.returnValue(new Promise(resolve => {
+                space[method].and.returnValue(new Promise(resolve => {
                     resolve({items: [], total: 0});
                 }));
                 space[method].calls.saveArgumentsByValue();
@@ -131,8 +115,7 @@ describe('contentful helper', function () {
             }));
 
             it('fetches and combines batches', testAsync(async function () {
-                const space = {};
-                space[method] = jasmine.createSpy('space.' + method).and.returnValues(
+                space[method].and.returnValues(
                     new Promise(resolve => {
                         resolve({items: ['a', 'b'], total: 4});
                     }),
@@ -149,8 +132,7 @@ describe('contentful helper', function () {
             }));
 
             it('delays fetching to avoid hitting API rate limit', testAsync(async function () {
-                const space = {};
-                space[method] = jasmine.createSpy('space.' + method).and.returnValues(
+                space[method].and.returnValues(
                     new Promise(resolve => {
                         resolve({items: ['a'], total: 3});
                     }),
