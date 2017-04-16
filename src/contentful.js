@@ -122,4 +122,14 @@ module.exports = {
         await apiIsReady();
         await entity.update();
     },
+
+    getLocales: async function (space) {
+        await apiIsReady();
+        return await space.getLocales();
+    },
+
+    getContentType: async function (space, contentTypeId) {
+        await apiIsReady();
+        return await space.getContentType(contentTypeId)
+    }
 };

@@ -305,4 +305,60 @@ describe('contentful helper', function () {
             expect(contentful.isInGracePeriod(entry)).toBe(false);
         });
     });
+
+    describe('getLocales', function () {
+        it('returns locales', testAsync(async function () {
+            const expectedLocales = ['locale1', 'locale2'];
+            const space = {
+                getLocales: jasmine.createSpy().and.returnValue(new Promise (resolve => resolve(expectedLocales)))
+            };
+
+            const locales = await contentful.getLocales(space);
+
+            expect(locales).toBe(expectedLocales);
+        }));
+
+        it('delays execution to avoid hitting API rate limit', testAsync(async function () {
+            const space = {
+                getLocales: jasmine.createSpy()
+            };
+
+            await contentful.getLocales(space);
+
+            expect(awaiting.delay).not.toHaveBeenCalled();
+
+            await contentful.getLocales(space);
+
+            expect(awaiting.delay).toHaveBeenCalled();
+        }));
+    });
+
+    describe('getContentType', function () {
+        it('returns content type', testAsync(async function () {
+            const contentTypeId = 'content type id';
+            const expectedContentType = 'content type';
+            const space = {
+                getContentType: jasmine.createSpy().and.returnValue(new Promise (resolve => resolve(expectedContentType)))
+            };
+
+            const contentType = await contentful.getContentType(space, contentTypeId);
+
+            expect(contentType).toBe(expectedContentType);
+            expect(space.getContentType).toHaveBeenCalledWith(contentTypeId);
+        }));
+
+        it('delays execution to avoid hitting API rate limit', testAsync(async function () {
+            const space = {
+                getContentType: jasmine.createSpy()
+            };
+
+            await contentful.getContentType(space, 'content type id');
+
+            expect(awaiting.delay).not.toHaveBeenCalled();
+
+            await contentful.getContentType(space, 'content type id');
+
+            expect(awaiting.delay).toHaveBeenCalled();
+        }));
+    });
 });

@@ -21,33 +21,28 @@ describe('EntryWriter', function () {
 
         let contentType;
         let entries;
-        let fieldName;
-        let modelId;
-        let space;
-        let value;
+
+        const fieldName = 'fieldName';;
+        const value = 'value';
+        const modelId = 'model-id';
+        const space = {};
 
         beforeEach(function () {
             entryWriter = new EntryWriter();        
 
-            modelId = 'model-id';
-            fieldName = 'fieldName';
-            value = 'value';
-
             entries = [];
 
             spyOn(contentful, 'getEntries').and.callFake(() => entries);
+            spyOn(contentful, 'getLocales').and.callFake(() => ({
+                items: [
+                    {code: 'en', default: true},
+                    {code: 'fr'}
+                ]
+            }));
+            spyOn(contentful, 'getContentType').and.callFake(() => contentType);
             spyOn(contentful, 'updateEntity');
 
             contentType = MockContentTypeBuilder.create('model-id').withField(fieldName, 'Symbol').get();
-            space = {
-                getContentType: () => contentType,
-                getLocales: jasmine.createSpy('space.getLocales').and.callFake(() => ({
-                    items: [
-                        {code: 'en', default: true},
-                        {code: 'fr'}
-                    ]
-                }))
-            };
         });
 
         it('updates entries with the correct value', testAsync(async function () {
@@ -94,9 +89,9 @@ describe('EntryWriter', function () {
         }));
 
         it('throws proper error if content type does not exist', testAsync(async function () {
-            space.getContentType = () => {
+            contentful.getContentType.and.callFake(() => {
                 throw {name: 'NotFound'};
-            };
+            });
 
             try {
                 await entryWriter.fillDefaultValue(space, modelId, fieldName, value);

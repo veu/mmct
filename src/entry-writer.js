@@ -34,7 +34,7 @@ module.exports = class EntryWriter {
             throw new Error(`Editing field ‘${fieldName}’ in content model ‘${contentType.name}’ is disabled`);
         }
 
-        const locales = await space.getLocales();
+        const locales = await contentful.getLocales(space);
         const relevantLocales = locales.items.filter(locale => field.localized || locale.default);
 
         this.localeCodes = relevantLocales.map(locale => locale.code);
@@ -42,7 +42,7 @@ module.exports = class EntryWriter {
 
     async getContentType(space, id) {
         try {
-            return await space.getContentType(id);
+            return await contentful.getContentType(space, id);
         } catch (e) {
             if (e.name === 'NotFound') {
                 throw new Error(`Content model ‘${id}’ does not exist`);
