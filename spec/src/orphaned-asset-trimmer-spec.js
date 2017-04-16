@@ -1,6 +1,5 @@
 const mock = require('mock-require');
 const MockAssetBuilder = require('../mock/mock-asset-builder');
-const Promise = require('sync-p');
 
 describe('AssetTrimmer', function () {
     function testAsync(runAsync) {

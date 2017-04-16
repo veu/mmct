@@ -1,6 +1,5 @@
 const mock = require('mock-require');
 const MockEntryBuilder = require('../mock/mock-entry-builder');
-const Promise = require('sync-p');
 
 describe('OutdatedEntryTrimmer', function () {
     function testAsync(runAsync) {

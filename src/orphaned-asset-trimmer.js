@@ -1,7 +1,6 @@
 const AssetIdCollector = require('./asset-id-collector');
 const contentful = require('./contentful');
 const EntryTraverser = require('./entry-traverser');
-const promiseAll = require('sync-p/all');
 
 module.exports = class OrphanedAssetTrimmer {
     async trim(space) {
@@ -24,10 +23,12 @@ module.exports = class OrphanedAssetTrimmer {
         this.usedAssetIds = assetIdCollector.assetIds;
     }
 
-    deleteUnusedAssets(assets) {
+    async deleteUnusedAssets(assets) {
         const unusedAssets = assets.filter(asset => !this.isInUse(asset));
 
-        return promiseAll(unusedAssets.map(asset => this.deleteAsset(asset)));
+        for (const asset of unusedAssets) {
+            await this.deleteAsset(asset);
+        }
     }
 
     isInUse(asset) {
@@ -42,9 +43,9 @@ module.exports = class OrphanedAssetTrimmer {
         return false;
     }
 
-    deleteAsset(asset) {
+    async deleteAsset(asset) {
         this.stats.deletedCount ++;
 
-        return contentful.deleteEntity(asset);
+        await contentful.deleteEntity(asset);
     }
 }

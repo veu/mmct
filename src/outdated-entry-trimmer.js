@@ -2,7 +2,6 @@ const _ = require('lodash');
 const contentful = require('./contentful');
 const EntryTraverser = require('./entry-traverser');
 const LinkedEntryIdCollector = require('./linked-entry-id-collector');
-const promiseAll = require('sync-p/all');
 
 module.exports = class OutdatedEntryTrimmer {
     constructor(fieldName) {
@@ -15,7 +14,7 @@ module.exports = class OutdatedEntryTrimmer {
         };  
 
         this.entries = await contentful.getEntries(space);
-        this.deleteEntries(this.getDeletableEntries());
+        await this.deleteEntries(this.getDeletableEntries());
 
         return this.stats;
     }
@@ -43,14 +42,16 @@ module.exports = class OutdatedEntryTrimmer {
         return nestedEntries;
     }
 
-    deleteEntries(entries) {
-        return promiseAll(entries.map(entry => this.deleteEntry(entry)));
+    async deleteEntries(entries) {
+        for (const entry of entries) {
+            await this.deleteEntry(entry);
+        }
     }
 
-    deleteEntry(entry) {
+    async deleteEntry(entry) {
         this.stats.deletedCount ++;
 
-        return contentful.deleteEntity(entry);
+        await contentful.deleteEntity(entry);
     }
 
     getOutdatedEntries() {
