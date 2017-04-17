@@ -39,10 +39,9 @@ describe('AssetTrimmer', function () {
         assetIdCollector = {};
 
         mock('../../src/asset-id-collector', class { constructor() { return assetIdCollector; }});
-        mock('../../src/entry-traverser', class { constructor() { return entryTraverser; }});
+        mock('../../src/entry-traverser', entryTraverser);
 
-        const AssetTrimmer = require('../../src/orphaned-asset-trimmer');
-        assetTrimmer = new AssetTrimmer();
+        assetTrimmer = require('../../src/orphaned-asset-trimmer');
     });
 
     afterEach(function () {
@@ -52,7 +51,7 @@ describe('AssetTrimmer', function () {
     it('deletes orphaned assets', testAsync(async function () {
         assetIdCollector.assetIds = new Set();
 
-        await assetTrimmer.trim(space);
+        const stats = await assetTrimmer.trim(space);
 
         expect(entryTraverser.traverse).toHaveBeenCalledWith(entries, assetIdCollector);
         expect(contentful.getEntries).toHaveBeenCalledWith(space);
@@ -63,29 +62,29 @@ describe('AssetTrimmer', function () {
             expect(contentful.deleteEntity).toHaveBeenCalledWith(asset);
         }
 
-        expect(assetTrimmer.stats.deletedCount).toBe(2);
+        expect(stats.deletedCount).toBe(2);
     }));
 
    it('keeps used asset', testAsync(async function () {
         assetIdCollector.assetIds = new Set(['asset2']);
 
-        await assetTrimmer.trim(space);
+        const stats = await assetTrimmer.trim(space);
 
         expect(contentful.deleteEntity).toHaveBeenCalledWith(assets[0]);
         expect(contentful.deleteEntity).not.toHaveBeenCalledWith(assets[1]);
 
-        expect(assetTrimmer.stats.deletedCount).toBe(1);
+        expect(stats.deletedCount).toBe(1);
     }));
 
     it('skips orphaned asset in grace period', testAsync(async function () {
         assetIdCollector.assetIds = new Set();
         contentful.isInGracePeriod.and.callFake(asset => asset === assets[1]);
 
-        await assetTrimmer.trim(space);
-        
+        const stats = await assetTrimmer.trim(space);
+
         expect(contentful.deleteEntity).toHaveBeenCalledWith(assets[0]);
         expect(contentful.deleteEntity).not.toHaveBeenCalledWith(assets[1]);
 
-        expect(assetTrimmer.stats.deletedCount).toBe(1);
+        expect(stats.deletedCount).toBe(1);
     }));
 });

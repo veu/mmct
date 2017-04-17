@@ -1,4 +1,4 @@
-const EntryWriter = require('../../src/entry-writer');
+const entryWriter = require('../../src/entry-writer');
 const contentful = require('../../src/contentful');
 const MockContentTypeBuilder = require('../mock/mock-content-type-builder');
 const MockEntryBuilder = require('../mock/mock-entry-builder');
@@ -17,8 +17,6 @@ describe('EntryWriter', function () {
     }
 
     describe('fillDefaultValue', function () {
-        let entryWriter;
-
         let contentType;
         let entries;
 
@@ -28,8 +26,6 @@ describe('EntryWriter', function () {
         const space = {};
 
         beforeEach(function () {
-            entryWriter = new EntryWriter();        
-
             entries = [];
 
             spyOn(contentful, 'getEntries').and.callFake(() => entries);

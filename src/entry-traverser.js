@@ -1,42 +1,44 @@
 const _ = require('lodash');
 
-module.exports = class EntryTraverser {
-    traverse(entries, visitor) {
-        this.visitor = visitor;
-        entries.forEach(entry => this._traverseEntry(entry));
+let visitor;
+
+function traverseEntry(entry) {
+    visit('Entry', entry);
+    _.forOwn(entry.fields, (field, identifier) => traverseField(field, identifier));
+}
+
+function traverseField(field, identifier) {
+    if (['boolean', 'number', 'string'].includes(typeof field)) {
+        visit(_.upperFirst(typeof field), field, identifier);
+        return;
     }
 
-    _traverseEntry(entry) {
-        this._visit('Entry', entry);
-        _.forOwn(entry.fields, (field, identifier) => this._traverseField(field, identifier));
+    if (Array.isArray(field)) {
+        visit('Array', field, identifier);
+        field.forEach(child => traverseField(child, identifier));
+        return;
     }
 
-    _traverseField(field, identifier) {
-        if (['boolean', 'number', 'string'].includes(typeof field)) {
-            this._visit(_.upperFirst(typeof field), field, identifier);
-            return;
-        }
-
-        if (Array.isArray(field)) {
-            this._visit('Array', field, identifier);
-            field.forEach(child => this._traverseField(child, identifier));
-            return;
-        }
-
-        if (field.sys && field.sys.type === 'Link') {
-            this._visit('Link', field.sys, identifier);
-            return;
-        }
-
-        for (const language of Object.keys(field)) {
-            this._visit('Language', field[language], language);
-            this._traverseField(field[language], identifier);
-        }
+    if (field.sys && field.sys.type === 'Link') {
+        visit('Link', field.sys, identifier);
+        return;
     }
 
-    _visit(elementName, element, identifier) {
-        if (this.visitor['visit' + elementName]) {
-            this.visitor['visit' + elementName](element, identifier);
-        }
+    for (const language of Object.keys(field)) {
+        visit('Language', field[language], language);
+        traverseField(field[language], identifier);
     }
 }
+
+function visit(elementName, element, identifier) {
+    if (visitor['visit' + elementName]) {
+        visitor['visit' + elementName](element, identifier);
+    }
+}
+
+module.exports = {
+    traverse: function (entries, entryVisitor) {
+        visitor = entryVisitor;
+        entries.forEach(entry => traverseEntry(entry));
+    }
+};

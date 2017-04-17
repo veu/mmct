@@ -1,78 +1,79 @@
 const _ = require('lodash');
 const contentful = require('./contentful');
-const EntryTraverser = require('./entry-traverser');
+const entryTraverser = require('./entry-traverser');
 const LinkedEntryIdCollector = require('./linked-entry-id-collector');
 
-module.exports = class OutdatedEntryTrimmer {
-    constructor(fieldName) {
-        this.fieldName = fieldName;
-    }
+let entries;
+let fieldName;
+let stats;
 
-    async trim(space) {
-        this.stats = {
-            deletedCount: 0
-        };  
+function getDeletableEntries() {
+    const outdatedEntries = getNestedEntries(getOutdatedEntries());
 
-        this.entries = await contentful.getEntries(space);
-        await this.deleteEntries(this.getDeletableEntries());
+    const outdatedEntriesSet = new Set(outdatedEntries);
+    const explicitlyCurrentEntries = entries.filter(entry => !outdatedEntriesSet.has(entry));
+    const currentEntries = new Set(getNestedEntries(explicitlyCurrentEntries));
 
-        return this.stats;
-    }
+    return outdatedEntries.filter(entry => !currentEntries.has(entry));
+}
 
-    getDeletableEntries() {
-        const outdatedEntries = this.getNestedEntries(this.getOutdatedEntries());
-
-        const outdatedEntriesSet = new Set(outdatedEntries);
-        const explicitlyCurrentEntries = this.entries.filter(entry => !outdatedEntriesSet.has(entry));
-        const currentEntries = new Set(this.getNestedEntries(explicitlyCurrentEntries));
-        
-        return outdatedEntries.filter(entry => !currentEntries.has(entry));
-    }
-
-    getNestedEntries(parents) {
-        let nestedEntries = parents;
-        for (let linkedEntries; parents.length > 0; parents = linkedEntries) {
-            const linkedEntryIds = this.getNestedEntryIds(parents);
-            linkedEntries = this.entries.filter(entry => {
-                return linkedEntryIds.has(entry.sys.id) && !nestedEntries.includes(entry);
-            });
-            nestedEntries = linkedEntries.concat(nestedEntries);
-        }
-
-        return nestedEntries;
-    }
-
-    async deleteEntries(entries) {
-        for (const entry of entries) {
-            await this.deleteEntry(entry);
-        }
-    }
-
-    async deleteEntry(entry) {
-        this.stats.deletedCount ++;
-
-        await contentful.deleteEntity(entry);
-    }
-
-    getOutdatedEntries() {
-        return this.entries.filter(entry => {
-            if (contentful.isInGracePeriod(entry)) {
-                return false;
-            }
-
-            if (!entry.fields[this.fieldName]) {
-                return false;
-            }
-
-            return _.every(entry.fields[this.fieldName], date => new Date(date) < new Date());
+function getNestedEntries(parents) {
+    let nestedEntries = parents;
+    for (let linkedEntries; parents.length > 0; parents = linkedEntries) {
+        const linkedEntryIds = getNestedEntryIds(parents);
+        linkedEntries = entries.filter(entry => {
+            return linkedEntryIds.has(entry.sys.id) && !nestedEntries.includes(entry);
         });
+        nestedEntries = linkedEntries.concat(nestedEntries);
     }
 
-    getNestedEntryIds(entries) {
-        const entryTraverser = new EntryTraverser();
-        const linkedEntryIdCollector = new LinkedEntryIdCollector();
-        entryTraverser.traverse(entries, linkedEntryIdCollector);
+    return nestedEntries;
+}
 
-        return linkedEntryIdCollector.entryIds;
+async function deleteEntries(entries) {
+    for (const entry of entries) {
+        await deleteEntry(entry);
+    }
+}
+
+async function deleteEntry(entry) {
+    stats.deletedCount ++;
+
+    await contentful.deleteEntity(entry);
+}
+
+function getOutdatedEntries() {
+    return entries.filter(entry => {
+        if (contentful.isInGracePeriod(entry)) {
+            return false;
+        }
+
+        if (!entry.fields[fieldName]) {
+            return false;
+        }
+
+        return _.every(entry.fields[fieldName], date => new Date(date) < new Date());
+    });
+}
+
+function getNestedEntryIds(entries) {
+    const linkedEntryIdCollector = new LinkedEntryIdCollector();
+    entryTraverser.traverse(entries, linkedEntryIdCollector);
+
+    return linkedEntryIdCollector.entryIds;
+}
+
+module.exports = {
+    trim: async function(space, field) {
+        fieldName = field;
+
+        stats = {
+            deletedCount: 0
+        };
+
+        entries = await contentful.getEntries(space);
+        await deleteEntries(getDeletableEntries());
+
+        return stats;
     }
 }
