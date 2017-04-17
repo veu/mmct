@@ -1,51 +1,42 @@
 const AssetIdCollector = require('./asset-id-collector');
 const contentful = require('./contentful');
-const EntryTraverser = require('./entry-traverser');
-const promiseAll = require('sync-p/all');
+const entryTraverser = require('./entry-traverser');
 
-module.exports = class OrphanedAssetTrimmer {
-    trim(space) {
-        this.stats = {
-            deletedCount: 0
+function collectAssetIds(entries) {
+    const assetIdCollector = new AssetIdCollector();
+
+    entryTraverser.traverse(entries, assetIdCollector);
+
+    return assetIdCollector.assetIds;
+}
+
+function isInUse(asset, usedAssetIds) {
+    if (usedAssetIds.has(asset.sys.id)) {
+        return true;
+    }
+
+    if (contentful.isInGracePeriod(asset)) {
+        return true;
+    }
+
+    return false;
+}
+
+async function deleteAssets(assets, usedAssetIds) {
+    for (const asset of assets) {
+        await contentful.deleteEntity(asset);
+    }
+}
+
+module.exports = {
+    trim: async function(space) {
+        const usedAssetIds = collectAssetIds(await contentful.getEntries(space));
+        const assets = await contentful.getAssets(space);
+        const unusedAssets = assets.filter(asset => !isInUse(asset, usedAssetIds));
+        await deleteAssets(unusedAssets);
+
+        return {
+            deletedCount: unusedAssets.length
         };
-
-        return contentful.getEntries(space)
-            .then(entries => this.collectAssetIds(entries))
-            .then(() => contentful.getAssets(space))
-            .then(assets => this.deleteUnusedAssets(assets))
-            .then(() => this.stats);
-    }
-
-    collectAssetIds(entries) {
-        const entryTraverser = new EntryTraverser();
-        const assetIdCollector = new AssetIdCollector();
-
-        entryTraverser.traverse(entries, assetIdCollector);
-        
-        this.usedAssetIds = assetIdCollector.assetIds;
-    }
-
-    deleteUnusedAssets(assets) {
-        const unusedAssets = assets.filter(asset => !this.isInUse(asset));
-
-        return promiseAll(unusedAssets.map(asset => this.deleteAsset(asset)));
-    }
-
-    isInUse(asset) {
-        if (this.usedAssetIds.has(asset.sys.id)) {
-            return true;
-        }
-
-        if (contentful.isInGracePeriod(asset)) {
-            return true;
-        }
-        
-        return false;
-    }
-
-    deleteAsset(asset) {
-        this.stats.deletedCount ++;
-
-        return contentful.deleteEntity(asset);
     }
 }

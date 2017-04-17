@@ -1,7 +1,5 @@
 const contentful = require('../../src/contentful');
-const mock = require('mock-require');
 const MockEntryBuilder = require('../mock/mock-entry-builder');
-const Promise = require('sync-p');
 
 describe('contentful helper', function () {
     function testAsync(runAsync) {
@@ -16,23 +14,36 @@ describe('contentful helper', function () {
         };
     }
 
-    describe('getSpace', function () {
-        afterEach(function () {
-            mock.stopAll();
-        });
+    let awaiting;
+    let testTime = 0;
 
-        it('passes credentials', testAsync(async function () {
-            const client = {
+    beforeEach(function () {
+        awaiting = require('awaiting');
+        spyOn(awaiting, 'delay');
+
+        jasmine.clock().install();
+        jasmine.clock().mockDate();
+        jasmine.clock().tick(testTime += 1000);
+    });
+
+    afterEach(function () {
+        jasmine.clock().uninstall();
+    });
+
+    describe('getSpace', function () {
+        let client;
+        let contentfulManagement;
+
+        beforeEach(function () {
+            client = {
                 getSpace: jasmine.createSpy('client.getSpace')
             };
 
-            const contentfulManagement = {
-                createClient: jasmine.createSpy('contentfulManagement.createClient').and.returnValue(client)
-            };
+            contentfulManagement = require('contentful-management');
+            spyOn(contentfulManagement, 'createClient').and.callFake(() => client);
+        });
 
-            mock('contentful-management', contentfulManagement);
-            const contentful = require('../../src/contentful');
-
+        it('passes credentials', testAsync(async function () {
             const spaceId = 'space-id';
             const accessToken = 'token';
 
@@ -45,32 +56,43 @@ describe('contentful helper', function () {
 
         it('throws proper error if connecting to space fails', testAsync(async function () {
             const originalError = 'anything';
-            const client = {
-                getSpace: jasmine.createSpy('client.getSpace').and.throwError(originalError)
-            };
-
-            const contentfulManagement = {
-                createClient: jasmine.createSpy('contentfulManagement.createClient').and.returnValue(client)
-            };
-
-            mock('contentful-management', contentfulManagement);
-            const contentful = require('../../src/contentful');
+            client.getSpace.and.throwError(originalError);
 
             try {
                 await contentful.getSpace('space-id', 'token');
+                fail();
             } catch (e) {
                 expect(e.message).not.toEqual(originalError);
             }
+        }));
+
+        it('delays execution to avoid hitting API rate limit', testAsync(async function () {
+            await contentful.getSpace('space-id', 'token');
+
+            expect(awaiting.delay).not.toHaveBeenCalled();
+            expect(client.getSpace).toHaveBeenCalled();
+
+            await contentful.getSpace('space-id', 'token');
+
+            expect(awaiting.delay).toHaveBeenCalled();
+            expect(client.getSpace).toHaveBeenCalledTimes(2);
         }));
     });
 
     for (const method of ['getAssets', 'getEntries']) {
         describe(method, function () {
+            let space;
+
+            beforeEach(function () {
+                space = {
+                    [method]: jasmine.createSpy('space.' + method)
+                };
+            });
+
             it('returns entities for space', testAsync(async function () {
                 const expectedAssets = ['a'];
-                const space = {};
-                space[method] = jasmine.createSpy('space.' + method).and.returnValue(new Promise(resolve => {
-                    resolve({items: expectedAssets, total: 2});
+                space[method].and.returnValue(new Promise(resolve => {
+                    resolve({items: expectedAssets, total: 1});
                 }));
 
                 const assets = await contentful[method](space);
@@ -79,22 +101,21 @@ describe('contentful helper', function () {
             }));
 
             it('passes paging parameters', testAsync(async function () {
-                const space = {};
-                space[method] = jasmine.createSpy('space.' + method).and.returnValue(new Promise(resolve => {
+                space[method].and.returnValue(new Promise(resolve => {
                     resolve({items: [], total: 0});
                 }));
+                space[method].calls.saveArgumentsByValue();
 
-                skip = 3;
-                limit = 5;
+                contentful.config.entityBatchLimit = 5;
+                const skip = 3;
 
-                await contentful[method](space, skip, limit);
+                await contentful[method](space, {skip});
 
-                expect(space[method]).toHaveBeenCalledWith({skip, limit});
+                expect(space[method]).toHaveBeenCalledWith({skip, limit: contentful.config.entityBatchLimit});
             }));
 
             it('fetches and combines batches', testAsync(async function () {
-                const space = {};
-                space[method] = jasmine.createSpy('space.' + method).and.returnValues(
+                space[method].and.returnValues(
                     new Promise(resolve => {
                         resolve({items: ['a', 'b'], total: 4});
                     }),
@@ -103,9 +124,31 @@ describe('contentful helper', function () {
                     })
                 );
 
-                const assets = await contentful[method](space, 0, 2);
+                contentful.config.entityBatchLimit = 2;
+
+                const assets = await contentful[method](space);
 
                 expect(assets).toEqual(['a', 'b', 'c', 'd']);
+            }));
+
+            it('delays fetching to avoid hitting API rate limit', testAsync(async function () {
+                space[method].and.returnValues(
+                    new Promise(resolve => {
+                        resolve({items: ['a'], total: 3});
+                    }),
+                    new Promise(resolve => {
+                        resolve({items: ['b'], total: 3});
+                    }),
+                    new Promise(resolve => {
+                        resolve({items: ['c'], total: 3});
+                    })
+                );
+
+                contentful.config.entityBatchLimit = 1;
+
+                const assets = await contentful[method](space);
+
+                expect(awaiting.delay).toHaveBeenCalledTimes(2);
             }));
         });
     }
@@ -162,29 +205,68 @@ describe('contentful helper', function () {
             entry.isPublished = jasmine.createSpy('entry.isPublished').and.returnValue(false);
             entry.delete = jasmine.createSpy('entry.delete');
 
-            jasmine.clock().install();
-            jasmine.clock().mockDate(new Date());
-            jasmine.clock().tick(100);
+            await contentful.deleteEntity(entry);
 
-            deletionPromise = contentful.deleteEntity(entry);
-
+            expect(awaiting.delay).not.toHaveBeenCalled();
             expect(entry.delete).toHaveBeenCalled();
 
-            await deletionPromise;
+            await contentful.deleteEntity(entry);
 
+            expect(awaiting.delay).toHaveBeenCalled();
+            expect(entry.delete).toHaveBeenCalled();
+        }));
+
+        it('delays unpublishing to avoid hitting API rate limit', testAsync(async function () {
+            contentful.config.isDryRun = false;
+
+            entry.isPublished = jasmine.createSpy('entry.isPublished').and.returnValue(true);
+            entry.unpublish = jasmine.createSpy('entry.unpublish');
             entry.delete = jasmine.createSpy('entry.delete');
 
-            deletionPromise = contentful.deleteEntity(entry);
+            await contentful.deleteEntity(entry);
 
-            jasmine.clock().tick(99);
+            expect(awaiting.delay).toHaveBeenCalledTimes(1);
+            expect(entry.unpublish).toHaveBeenCalled();
 
-            expect(entry.delete).not.toHaveBeenCalled();
+            awaiting.delay.calls.reset();
 
-            jasmine.clock().tick(1);
+            await contentful.deleteEntity(entry);
 
-            expect(entry.delete).toHaveBeenCalled();
+            expect(awaiting.delay).toHaveBeenCalledTimes(2);
+            expect(entry.unpublish).toHaveBeenCalled();
+        }));
+    });
 
-            jasmine.clock().uninstall();
+    describe('updateEntity', function () {
+        let entry;
+
+        beforeEach(function () {
+            spyOn(console, 'log');
+
+            entry = MockEntryBuilder.create().get();
+        });
+
+        it('logs and updates entity', testAsync(async function () {
+            entry.update = jasmine.createSpy('entry.update');
+
+            await contentful.updateEntity(entry);
+
+            expect(console.log).toHaveBeenCalled();
+            expect(entry.update).toHaveBeenCalled();
+        }));
+
+        it('delays update to avoid hitting API rate limit', testAsync(async function () {
+            entry.update = jasmine.createSpy('entry.update');
+
+            await contentful.updateEntity(entry);
+
+            expect(awaiting.delay).not.toHaveBeenCalled();
+            expect(entry.update).toHaveBeenCalled();
+
+            await contentful.updateEntity(entry);
+
+            expect(awaiting.delay).toHaveBeenCalled();
+            expect(entry.update).toHaveBeenCalledTimes(2);
         }));
     });
 
@@ -192,15 +274,6 @@ describe('contentful helper', function () {
         contentful.config.gracePeriod = 1;
 
         const entry = MockEntryBuilder.create().get();
-
-        beforeEach(function () {
-            jasmine.clock().install();
-            jasmine.clock().mockDate();
-        });
-
-        afterEach(function () {
-            jasmine.clock().uninstall();
-        });
 
         it('returns true if entity has been updated in grace period', function () {
             entry.sys.updatedAt = new Date(new Date() - 24 * 60 * 60 * 1000);
@@ -213,5 +286,61 @@ describe('contentful helper', function () {
 
             expect(contentful.isInGracePeriod(entry)).toBe(false);
         });
+    });
+
+    describe('getLocales', function () {
+        it('returns locales', testAsync(async function () {
+            const expectedLocales = ['locale1', 'locale2'];
+            const space = {
+                getLocales: jasmine.createSpy().and.returnValue(new Promise (resolve => resolve(expectedLocales)))
+            };
+
+            const locales = await contentful.getLocales(space);
+
+            expect(locales).toBe(expectedLocales);
+        }));
+
+        it('delays execution to avoid hitting API rate limit', testAsync(async function () {
+            const space = {
+                getLocales: jasmine.createSpy()
+            };
+
+            await contentful.getLocales(space);
+
+            expect(awaiting.delay).not.toHaveBeenCalled();
+
+            await contentful.getLocales(space);
+
+            expect(awaiting.delay).toHaveBeenCalled();
+        }));
+    });
+
+    describe('getContentType', function () {
+        it('returns content type', testAsync(async function () {
+            const contentTypeId = 'content type id';
+            const expectedContentType = 'content type';
+            const space = {
+                getContentType: jasmine.createSpy().and.returnValue(new Promise (resolve => resolve(expectedContentType)))
+            };
+
+            const contentType = await contentful.getContentType(space, contentTypeId);
+
+            expect(contentType).toBe(expectedContentType);
+            expect(space.getContentType).toHaveBeenCalledWith(contentTypeId);
+        }));
+
+        it('delays execution to avoid hitting API rate limit', testAsync(async function () {
+            const space = {
+                getContentType: jasmine.createSpy()
+            };
+
+            await contentful.getContentType(space, 'content type id');
+
+            expect(awaiting.delay).not.toHaveBeenCalled();
+
+            await contentful.getContentType(space, 'content type id');
+
+            expect(awaiting.delay).toHaveBeenCalled();
+        }));
     });
 });

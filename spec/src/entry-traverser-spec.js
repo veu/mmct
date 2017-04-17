@@ -1,10 +1,8 @@
 const _ = require('lodash');
-const EntryTraverser = require('../../src/entry-traverser');
+const entryTraverser = require('../../src/entry-traverser');
 const MockEntryBuilder = require('../mock/mock-entry-builder');
 
 describe('EntryTraverser', function () {
-    const entryTraverser = new EntryTraverser();
-
     it('visits entry in entries', function() {
         const visitor = jasmine.createSpyObj('visitor', ['visitEntry']);
         const entry = MockEntryBuilder.create().get();

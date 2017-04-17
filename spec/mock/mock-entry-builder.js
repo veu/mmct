@@ -45,7 +45,7 @@ class MockEntryBuilder {
         this.entry = _.cloneDeep(basicEntry);
         this.entry.sys.contentType.sys.id = contentTypeId;
 
-        this.language = 'en-US';
+        this.language = 'en';
     }
 
     withId(id) {
