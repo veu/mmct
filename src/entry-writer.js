@@ -2,9 +2,6 @@ const contentful = require('./contentful');
 
 const textTypes = ['Text', 'Symbol'];
 
-let stats;
-let localeCodes;
-
 async function getLocales(space, modelId, fieldName) {
     const contentType = await getContentType(space, modelId);
 
@@ -49,36 +46,24 @@ async function getContentType(space, id) {
     }
 }
 
-async function setDefaultValues(entries, fieldName, value) {
+async function setLocalizedValues(entries, fieldName, localizedValue) {
     for (const entry of entries) {
-        await setDefaultValue(entry, fieldName, value);
+        entry.fields[fieldName] = localizedValue;
+        await contentful.updateEntity(entry);
     }
-}
-
-async function setDefaultValue(entry, fieldName, localizedValue) {
-    if (entry.fields[fieldName] !== undefined) {
-        return;
-    }
-
-    stats.updatedCount ++;
-
-    entry.fields[fieldName] = localizedValue;
-
-    await contentful.updateEntity(entry);
 }
 
 module.exports = {
     fillDefaultValue: async function (space, modelId, fieldName, value) {
-        stats = {
-            updatedCount: 0
-        };
-
         const localeCodes = await getLocales(space, modelId, fieldName);
         const localizedValue = createLocalizedValue(value, localeCodes);
 
         const entries = await contentful.getEntries(space, {content_type: modelId});
-        await setDefaultValues(entries, fieldName, localizedValue);
+        const entriesToUpdate = entries.filter(entry => entry.fields[fieldName] === undefined);
+        await setLocalizedValues(entriesToUpdate, fieldName, localizedValue);
 
-        return stats;
+        return {
+            updatedCount: entriesToUpdate.length
+        };
     }
 }

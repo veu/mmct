@@ -1,44 +1,41 @@
 const _ = require('lodash');
 
-let visitor;
-
-function traverseEntry(entry) {
-    visit('Entry', entry);
-    _.forOwn(entry.fields, (field, identifier) => traverseField(field, identifier));
+function traverseEntry(visitor, entry) {
+    visit(visitor, 'Entry', entry);
+    _.forOwn(entry.fields, (field, identifier) => traverseField(visitor, field, identifier));
 }
 
-function traverseField(field, identifier) {
+function traverseField(visitor, field, identifier) {
     if (['boolean', 'number', 'string'].includes(typeof field)) {
-        visit(_.upperFirst(typeof field), field, identifier);
+        visit(visitor, _.upperFirst(typeof field), field, identifier);
         return;
     }
 
     if (Array.isArray(field)) {
-        visit('Array', field, identifier);
-        field.forEach(child => traverseField(child, identifier));
+        visit(visitor, 'Array', field, identifier);
+        field.forEach(child => traverseField(visitor, child, identifier));
         return;
     }
 
     if (field.sys && field.sys.type === 'Link') {
-        visit('Link', field.sys, identifier);
+        visit(visitor, 'Link', field.sys, identifier);
         return;
     }
 
     for (const language of Object.keys(field)) {
-        visit('Language', field[language], language);
-        traverseField(field[language], identifier);
+        visit(visitor, 'Language', field[language], language);
+        traverseField(visitor, field[language], identifier);
     }
 }
 
-function visit(elementName, element, identifier) {
+function visit(visitor, elementName, element, identifier) {
     if (visitor['visit' + elementName]) {
         visitor['visit' + elementName](element, identifier);
     }
 }
 
 module.exports = {
-    traverse: function (entries, entryVisitor) {
-        visitor = entryVisitor;
-        entries.forEach(entry => traverseEntry(entry));
+    traverse: function (entries, visitor) {
+        entries.forEach(entry => traverseEntry(visitor, entry));
     }
 };

@@ -2,7 +2,7 @@ const entryTraverser = require('../../src/entry-traverser');
 const mock = require('mock-require');
 const MockEntryBuilder = require('../mock/mock-entry-builder');
 
-describe('OutdatedEntryTrimmer', function () {
+describe('outdatedEntryTrimmer', function () {
     function testAsync(runAsync) {
         return function (done) {
             runAsync().then(
@@ -233,6 +233,6 @@ describe('OutdatedEntryTrimmer', function () {
 
         const deletedEntries = contentful.deleteEntity.calls.allArgs().map(args => args[0]);
 
-        expect(deletedEntries).toEqual(entries);
+        expect(deletedEntries.map(entry => entry.sys.id)).toEqual(entries.map(entry => entry.sys.id));
     }));
 });

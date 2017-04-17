@@ -3,7 +3,7 @@ const contentful = require('../../src/contentful');
 const MockContentTypeBuilder = require('../mock/mock-content-type-builder');
 const MockEntryBuilder = require('../mock/mock-entry-builder');
 
-describe('EntryWriter', function () {
+describe('entryWriter', function () {
     function testAsync(runAsync) {
         return function (done) {
             runAsync().then(

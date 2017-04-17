@@ -2,7 +2,7 @@ const mock = require('mock-require');
 const contentful = require('../../src/contentful');
 const MockAssetBuilder = require('../mock/mock-asset-builder');
 
-describe('AssetTrimmer', function () {
+describe('orphanedAssetTrimmer', function () {
     function testAsync(runAsync) {
         return function (done) {
             runAsync().then(

@@ -3,21 +3,18 @@ const contentful = require('./contentful');
 const entryTraverser = require('./entry-traverser');
 const LinkedEntryIdCollector = require('./linked-entry-id-collector');
 
-let entries;
-let fieldName;
-let stats;
-
-function getDeletableEntries() {
-    const outdatedEntries = getNestedEntries(getOutdatedEntries());
+function getDeletableEntries(entries, fieldName) {
+    const explicitlyOutdatedEntries = entries.filter(entry => isOutdated(entry, fieldName));
+    const outdatedEntries = getNestedEntries(entries, explicitlyOutdatedEntries);
 
     const outdatedEntriesSet = new Set(outdatedEntries);
     const explicitlyCurrentEntries = entries.filter(entry => !outdatedEntriesSet.has(entry));
-    const currentEntries = new Set(getNestedEntries(explicitlyCurrentEntries));
+    const currentEntries = new Set(getNestedEntries(entries, explicitlyCurrentEntries));
 
     return outdatedEntries.filter(entry => !currentEntries.has(entry));
 }
 
-function getNestedEntries(parents) {
+function getNestedEntries(entries, parents) {
     let nestedEntries = parents;
     for (let linkedEntries; parents.length > 0; parents = linkedEntries) {
         const linkedEntryIds = getNestedEntryIds(parents);
@@ -32,28 +29,20 @@ function getNestedEntries(parents) {
 
 async function deleteEntries(entries) {
     for (const entry of entries) {
-        await deleteEntry(entry);
+        await contentful.deleteEntity(entry);
     }
 }
 
-async function deleteEntry(entry) {
-    stats.deletedCount ++;
+function isOutdated(entry, fieldName) {
+    if (contentful.isInGracePeriod(entry)) {
+        return false;
+    }
 
-    await contentful.deleteEntity(entry);
-}
+    if (!entry.fields[fieldName]) {
+        return false;
+    }
 
-function getOutdatedEntries() {
-    return entries.filter(entry => {
-        if (contentful.isInGracePeriod(entry)) {
-            return false;
-        }
-
-        if (!entry.fields[fieldName]) {
-            return false;
-        }
-
-        return _.every(entry.fields[fieldName], date => new Date(date) < new Date());
-    });
+    return _.every(entry.fields[fieldName], date => new Date(date) < new Date());
 }
 
 function getNestedEntryIds(entries) {
@@ -64,16 +53,13 @@ function getNestedEntryIds(entries) {
 }
 
 module.exports = {
-    trim: async function(space, field) {
-        fieldName = field;
+    trim: async function(space, fieldName) {
+        const entries = await contentful.getEntries(space);
+        const deletableEntries = getDeletableEntries(entries, fieldName);
+        await deleteEntries(deletableEntries);
 
-        stats = {
-            deletedCount: 0
+        return {
+            deletedCount: deletableEntries.length
         };
-
-        entries = await contentful.getEntries(space);
-        await deleteEntries(getDeletableEntries());
-
-        return stats;
     }
 }
