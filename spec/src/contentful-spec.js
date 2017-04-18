@@ -248,6 +248,7 @@ describe('contentful helper', function () {
 
         it('logs and updates entity', testAsync(async function () {
             entry.update = jasmine.createSpy('entry.update');
+            entry.isPublished = () => false;
 
             await contentful.updateEntity(entry);
 
@@ -255,8 +256,35 @@ describe('contentful helper', function () {
             expect(entry.update).toHaveBeenCalled();
         }));
 
+        it('publishes entry that was published without pending changes', testAsync(async function () {
+            const updatedEntry = MockEntryBuilder.create().get();
+            updatedEntry.publish = jasmine.createSpy('updatedEntry.publish');
+
+            entry.isPublished = () => true;
+            entry.isUpdated = () => false;
+            entry.update = () => new Promise(resolve => resolve(updatedEntry));
+
+            await contentful.updateEntity(entry);
+
+            expect(updatedEntry.publish).toHaveBeenCalled();
+        }));
+
+        it('does not publish entry that was published with pending changes', testAsync(async function () {
+            const updatedEntry = MockEntryBuilder.create().get();
+            updatedEntry.publish = jasmine.createSpy('updatedEntry.publish');
+
+            entry.isPublished = () => true;
+            entry.isUpdated = () => true;
+            entry.update = () => new Promise(resolve => resolve(updatedEntry));
+
+            await contentful.updateEntity(entry);
+
+            expect(updatedEntry.publish).not.toHaveBeenCalled();
+        }));
+
         it('delays update to avoid hitting API rate limit', testAsync(async function () {
             entry.update = jasmine.createSpy('entry.update');
+            entry.isPublished = () => false;
 
             await contentful.updateEntity(entry);
 
