@@ -120,7 +120,12 @@ module.exports = {
         console.log(`updating ${entity.sys.type.toLowerCase()} ${link}`);
 
         await apiIsReady();
-        await entity.update();
+        const updatedEntity = await entity.update();
+
+        if (entity.isPublished() && !entity.isUpdated()) {
+            await apiIsReady();
+            await updatedEntity.publish();
+        }
     },
 
     getLocales: async function (space) {
