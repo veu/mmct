@@ -134,4 +134,134 @@ describe('entryWriter', function () {
             }
         }));
     });
+
+    describe('copyValue', function () {
+        let contentType;
+        let entries;
+
+        const modelId = 'model-id';
+        const space = {};
+
+        beforeEach(function () {
+            entries = [];
+
+            spyOn(contentful, 'getEntries').and.callFake(() => entries);
+            spyOn(contentful, 'getContentType').and.callFake(() => contentType);
+            spyOn(contentful, 'updateEntity');
+
+            contentType = MockContentTypeBuilder
+                .create('model-id')
+                .withField('src', 'Symbol')
+                .withField('dest', 'Text')
+                .get();
+        });
+
+        it('copies values', testAsync(async function () {
+            entries.push(
+                MockEntryBuilder.create().withField('src', 'value').get(),
+                MockEntryBuilder.create().withField('src', 'value').withField('dest', 'different value').get()
+            );
+
+            const stats = await entryWriter.copyValue(space, modelId, 'src', 'dest');
+
+            for (const entry of entries) {
+                expect(entry.fields['dest']).toEqual({'en': 'value'});
+                expect(contentful.updateEntity).toHaveBeenCalledWith(entry);
+            }
+
+            expect(stats.updatedCount).toBe(2);
+        }));
+
+        it('throws if source field is missing in content type', testAsync(async function () {
+            contentType = MockContentTypeBuilder.create('model-id').withField('dest', 'Symbol').get();
+
+            try {
+                await entryWriter.copyValue(space, modelId, 'src', 'dest');
+                fail();
+            } catch (e) {
+                expect(e.message).toEqual(jasmine.stringMatching('src'));
+            }
+        }));
+
+        it('throws if destination field is missing in content type', testAsync(async function () {
+            contentType = MockContentTypeBuilder.create('model-id').withField('src', 'Symbol').get();
+
+            try {
+                await entryWriter.copyValue(space, modelId, 'src', 'dest');
+                fail();
+            } catch (e) {
+                expect(e.message).toEqual(jasmine.stringMatching('dest'));
+            }
+        }));
+
+        it('throws if destination field is disabled', testAsync(async function () {
+            contentType.fields.find(field => field.id === 'dest').disabled = true;
+
+            try {
+                await entryWriter.copyValue(space, modelId, 'src', 'dest');
+                fail();
+            } catch (e) {
+                expect(e.message).toEqual(jasmine.stringMatching('dest'));
+            }
+        }));
+
+        it('throws if source field is localized but destination field is not', testAsync(async function () {
+            contentType.fields.find(field => field.id === 'src').localized = true;
+
+            try {
+                await entryWriter.copyValue(space, modelId, 'src', 'dest');
+                fail();
+            } catch (e) {
+                expect(e.message).toEqual(jasmine.stringMatching('src'));
+                expect(e.message).toEqual(jasmine.stringMatching('dest'));
+            }
+        }));
+
+        it('throws if source field is not localized but destination field is', testAsync(async function () {
+            contentType.fields.find(field => field.id === 'dest').localized = true;
+
+            try {
+                await entryWriter.copyValue(space, modelId, 'src', 'dest');
+                fail();
+            } catch (e) {
+                expect(e.message).toEqual(jasmine.stringMatching('src'));
+                expect(e.message).toEqual(jasmine.stringMatching('dest'));
+            }
+        }));
+
+        it('throws if source field does not have a text type', testAsync(async function () {
+            contentType.fields.find(field => field.id === 'src').type = 'Link';
+
+            try {
+                await entryWriter.copyValue(space, modelId, 'src', 'dest');
+                fail();
+            } catch (e) {
+                expect(e.message).toEqual(jasmine.stringMatching('src'));
+            }
+        }));
+
+        it('throws if destination field does not have a text type', testAsync(async function () {
+            contentType.fields.find(field => field.id === 'dest').type = 'Link';
+
+            try {
+                await entryWriter.copyValue(space, modelId, 'src', 'dest');
+                fail();
+            } catch (e) {
+                expect(e.message).toEqual(jasmine.stringMatching('dest'));
+            }
+        }));
+
+        it('throws if trying to copy long text into short text', testAsync(async function () {
+            contentType = MockContentTypeBuilder
+                .create('model-id')
+                .withField('src', 'Text')
+                .withField('dest', 'Symbol')
+                .get();
+
+            try {
+                await entryWriter.copyValue(space, modelId, 'src', 'dest');
+                fail();
+            } catch (e) {}
+        }));
+    });
 });
