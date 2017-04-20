@@ -48,9 +48,29 @@ Added a text field to a content model and need to update existing entries?
 Use this command to add a value for all entries of the model that are missing the field.
 If the field is localized, all language versions will be set to the same value.
 
+Previously published entries without pending changes will be published again after updating.
+
 ```
 echo -n "value" | mmct-fill default-value <space-id> <auth-token> <content-model-id> <field>
 ```
 
 * **content-model-id** Content model ID of the entries to update.
 * **field** Name of the field to fill.
+
+### Copying
+
+The following commands copy data for multiple entries at once.
+
+#### Copy value
+
+Copies the text value in the source field to the destination field for all entries of the model.
+
+Previously published entries without pending changes will be published again after updating.
+
+```
+mmct-copy value <space-id> <auth-token> <content-model-id> <src-field> <dest-field>
+```
+
+* **content-model-id** Content model ID of the entries to update.
+* **src-field** Name of the field to copy the value.
+* **dest-field** Name of the field to paste the value.

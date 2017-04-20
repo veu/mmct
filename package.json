@@ -21,6 +21,7 @@
     "node": ">=7.6"
   },
   "bin": {
+    "mmct-copy": "./bin/copy.js",
     "mmct-fill": "./bin/fill.js",
     "mmct-trim": "./bin/trim.js"
   },
