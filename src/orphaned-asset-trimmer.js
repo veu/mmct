@@ -22,7 +22,7 @@ function isInUse(asset, usedAssetIds) {
     return false;
 }
 
-async function deleteAssets(assets, usedAssetIds) {
+async function deleteAssets(assets) {
     for (const asset of assets) {
         await contentful.deleteEntity(asset);
     }

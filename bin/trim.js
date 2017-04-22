@@ -2,6 +2,7 @@
 
 const contentful = require('../src/contentful');
 const orphanedAssetTrimmer = require('../src/orphaned-asset-trimmer');
+const orphanedEntryTrimmer = require('../src/orphaned-entry-trimmer');
 const outdatedEntryTrimmer = require('../src/outdated-entry-trimmer');
 const yargs = require('yargs');
 
@@ -36,6 +37,19 @@ yargs
             const stats = await orphanedAssetTrimmer.trim(space);
 
             console.log(`Deleted ${stats.deletedCount} orphaned assets.`);
+        } catch (e) {
+            reportError(e);
+        }
+    })
+    .command('orphaned-entries <space> <token> <content-model-id>', 'delete unused entries of the type', {}, async function (argv) {
+        contentful.config.gracePeriod = argv.gracePeriod;
+        contentful.config.isDryRun = argv.dryRun;
+
+        try {
+            const space = await contentful.getSpace(argv.space, argv.token);
+            const stats = await orphanedEntryTrimmer.trim(space, argv.contentModelId);
+
+            console.log(`Deleted ${stats.deletedCount} orphaned entries.`);
         } catch (e) {
             reportError(e);
         }

@@ -38,6 +38,19 @@ mmct-trim orphaned-assets <space-id> <auth-token> [--grace-period <days>] [--dry
 * **--grace-period** Keep all entries that have been updated within the last `<days>`. Default: 5
 * **--dry-run** Don’t delete anything but list what would have been deleted.
 
+#### Delete orphaned entries
+
+Deletes all entries of the given content model that are not linked in any entries.
+Useful if you have entries that are only used as links in other entries.
+
+```
+mmct-trim orphaned-entries <space-id> <auth-token> <content-model-id> [--grace-period <days>] [--dry-run]
+```
+
+* **content-model-id** Content model ID of the entries to delete.
+* **--grace-period** Keep all entries that have been updated within the last `<days>`. Default: 5
+* **--dry-run** Don’t delete anything but list what would have been deleted.
+
 ### Filling entries
 
 The following commands enter data for multiple entries at once.
