@@ -1,15 +1,16 @@
 {
   "name": "MMCT",
-  "version": "1.0.0",
-  "description": "Unofficial tools for working with contentful",
+  "version": "2.0.0",
+  "description": "Toolset for contentful space management",
   "repository": {
     "type": "git",
     "url": "https://github.com/veu/mmct.git"
   },
   "dependencies": {
     "awaiting": "^2.0.1",
+    "configstore": "^3.0.0",
     "contentful-management": "^3.3.4",
-    "get-stdin": "^5.0.1",
+    "inquirer": "^3.0.6",
     "lodash": "^4.16.4",
     "yargs": "^7.0.2"
   },
@@ -23,6 +24,7 @@
   "bin": {
     "mmct-copy": "./bin/copy.js",
     "mmct-fill": "./bin/fill.js",
+    "mmct-init": "./bin/init.js",
     "mmct-trim": "./bin/trim.js"
   },
   "author": "Rebecca König",

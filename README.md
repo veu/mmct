@@ -8,6 +8,18 @@ Toolset for [contentful](https://www.contentful.com/) space management.
 * Install node >= 7.6
 * run `npm install -g https://github.com/veu/mmct`
 
+## Getting started
+
+When running a command for the first time you will be prompted to enter the OAuth token and other required information.
+Once entered it will be stored in the config file located at `~/.config/configstore/MMCT.json`.
+To simplify this process, run the following command to enter all config values at once.
+
+```
+mmct-init
+```
+
+Alternatively, you can create the config file manually.
+
 ## Usage
 
 ### Trimming scheduled content
@@ -20,11 +32,11 @@ Add an expiry date to your content model and remove entries from the space once 
 Deletes all entries with an expiry date in the past and entries linked in expired entries and not anywhere else.
 
 ```
-mmct-trim outdated-entries <space-id> <auth-token> <expiry-field> [--grace-period <days>] [--dry-run]
+mmct-trim outdated-entries <space-id> <expiry-field> [--grace-period <days>] [--dry-run]
 ```
 
 * **expiry-field** The name of the field containing the expiration date of the entry.
-* **--grace-period** Keep all entries that have been updated within the last `<days>`. Default: 5
+* **--grace-period** Keep all entries that have been updated within the last `<days>`. Default: config value
 * **--dry-run** Don’t delete anything but list what would have been deleted.
 
 #### Delete orphaned assets
@@ -32,10 +44,10 @@ mmct-trim outdated-entries <space-id> <auth-token> <expiry-field> [--grace-perio
 Deletes all assets that are not linked in any entries. Best used after the previous command.
 
 ```
-mmct-trim orphaned-assets <space-id> <auth-token> [--grace-period <days>] [--dry-run]
+mmct-trim orphaned-assets <space-id> [--grace-period <days>] [--dry-run]
 ```
 
-* **--grace-period** Keep all entries that have been updated within the last `<days>`. Default: 5
+* **--grace-period** Keep all entries that have been updated within the last `<days>`. Default: config value
 * **--dry-run** Don’t delete anything but list what would have been deleted.
 
 #### Delete orphaned entries
@@ -44,11 +56,11 @@ Deletes all entries of the given content model that are not linked in any entrie
 Useful if you have entries that are only used as links in other entries.
 
 ```
-mmct-trim orphaned-entries <space-id> <auth-token> <content-model-id> [--grace-period <days>] [--dry-run]
+mmct-trim orphaned-entries <space-id> <content-model-id> [--grace-period <days>] [--dry-run]
 ```
 
 * **content-model-id** Content model ID of the entries to delete.
-* **--grace-period** Keep all entries that have been updated within the last `<days>`. Default: 5
+* **--grace-period** Keep all entries that have been updated within the last `<days>`. Default: config value
 * **--dry-run** Don’t delete anything but list what would have been deleted.
 
 ### Filling entries
@@ -64,11 +76,12 @@ If the field is localized, all language versions will be set to the same value.
 Previously published entries without pending changes will be published again after updating.
 
 ```
-echo -n "value" | mmct-fill default-value <space-id> <auth-token> <content-model-id> <field>
+mmct-fill default-value <space-id> <content-model-id> <field> <value>
 ```
 
 * **content-model-id** Content model ID of the entries to update.
 * **field** Name of the field to fill.
+* **value** Text to enter.
 
 ### Copying
 
@@ -81,7 +94,7 @@ Copies the text value in the source field to the destination field for all entri
 Previously published entries without pending changes will be published again after updating.
 
 ```
-mmct-copy value <space-id> <auth-token> <content-model-id> <src-field> <dest-field>
+mmct-copy value <space-id> <content-model-id> <src-field> <dest-field>
 ```
 
 * **content-model-id** Content model ID of the entries to update.
