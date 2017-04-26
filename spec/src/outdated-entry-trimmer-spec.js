@@ -1,19 +1,9 @@
 const entryTraverser = require('../../src/entry-traverser');
 const mock = require('mock-require');
 const MockEntryBuilder = require('../mock/mock-entry-builder');
+const {testAsync} = require('../helper');
 
 describe('outdatedEntryTrimmer', function () {
-    function testAsync(runAsync) {
-        return function (done) {
-            runAsync().then(
-                done,
-                function (e) {
-                    fail(e);
-                    done();
-                }
-            );
-        };
-    }
 
     const space = 'space';
 

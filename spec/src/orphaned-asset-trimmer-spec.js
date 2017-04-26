@@ -1,20 +1,9 @@
 const mock = require('mock-require');
 const contentful = require('../../src/contentful');
 const MockAssetBuilder = require('../mock/mock-asset-builder');
+const {testAsync} = require('../helper');
 
 describe('orphanedAssetTrimmer', function () {
-    function testAsync(runAsync) {
-        return function (done) {
-            runAsync().then(
-                done,
-                function (e) {
-                    fail(e);
-                    done();
-                }
-            );
-        };
-    }
-
     const assets = [
         MockAssetBuilder.create().withId('asset1').get(),
         MockAssetBuilder.create().withId('asset2').get()

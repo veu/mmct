@@ -2,20 +2,9 @@ const entryWriter = require('../../src/entry-writer');
 const contentful = require('../../src/contentful');
 const MockContentTypeBuilder = require('../mock/mock-content-type-builder');
 const MockEntryBuilder = require('../mock/mock-entry-builder');
+const {testAsync} = require('../helper');
 
 describe('entryWriter', function () {
-    function testAsync(runAsync) {
-        return function (done) {
-            runAsync().then(
-                done,
-                function (e) {
-                    fail(e);
-                    done();
-                }
-            );
-        };
-    }
-
     describe('fillDefaultValue', function () {
         let contentType;
         let entries;
