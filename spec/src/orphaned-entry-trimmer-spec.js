@@ -2,20 +2,9 @@ const mock = require('mock-require');
 const contentful = require('../../src/contentful');
 const MockEntryBuilder = require('../mock/mock-entry-builder');
 const entryTraverser = require('../../src/entry-traverser');
+const {testAsync} = require('../helper');
 
 describe('orphanedEntryTrimmer', function () {
-    function testAsync(runAsync) {
-        return function (done) {
-            runAsync().then(
-                done,
-                function (e) {
-                    fail(e);
-                    done();
-                }
-            );
-        };
-    }
-
     const entries = [
         MockEntryBuilder.create('model').withId('entry1').get(),
         MockEntryBuilder.create('model').withId('entry2').get()

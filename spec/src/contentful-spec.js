@@ -1,19 +1,8 @@
 const contentful = require('../../src/contentful');
 const MockEntryBuilder = require('../mock/mock-entry-builder');
+const {testAsync} = require('../helper');
 
 describe('contentful helper', function () {
-    function testAsync(runAsync) {
-        return function (done) {
-            runAsync().then(
-                done,
-                function (e) {
-                    fail(e);
-                    done();
-                }
-            );
-        };
-    }
-
     let awaiting;
     let testTime = 0;
 
