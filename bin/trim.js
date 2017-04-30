@@ -2,6 +2,7 @@
 
 const config = require('../src/config');
 const contentful = require('../src/contentful');
+const draftTrimmer = require('../src/draft-trimmer');
 const orphanedAssetTrimmer = require('../src/orphaned-asset-trimmer');
 const orphanedEntryTrimmer = require('../src/orphaned-entry-trimmer');
 const outdatedEntryTrimmer = require('../src/outdated-entry-trimmer');
@@ -30,6 +31,20 @@ async function trim() {
             nargs: 1,
             default: await config.getGracePeriod()
         })
+        .command('drafts <space>', 'delete drafts', {}, async function (argv) {
+            contentful.config.gracePeriod = argv.gracePeriod;
+            contentful.config.isDryRun = argv.dryRun;
+
+            try {
+                const token = await config.getToken();
+                const space = await contentful.getSpace(argv.space, token);
+                const stats = await draftTrimmer.trim(space);
+
+                console.log(`Deleted ${stats.deletedCount} drafts.`);
+            } catch (e) {
+                reportError(e);
+            }
+        })
         .command('orphaned-assets <space>', 'delete unused assets', {}, async function (argv) {
             contentful.config.gracePeriod = argv.gracePeriod;
             contentful.config.isDryRun = argv.dryRun;
@@ -41,7 +56,6 @@ async function trim() {
 
                 console.log(`Deleted ${stats.deletedCount} orphaned assets.`);
             } catch (e) {
-                console.log(e);
                 reportError(e);
             }
         })
