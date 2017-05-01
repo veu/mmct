@@ -5,7 +5,7 @@ Toolset for [contentful](https://www.contentful.com/) space management.
 
 ## Installation
 
-* Install node >= 7.6
+* Install node >= 6
 * run `npm install -g https://github.com/veu/mmct`
 
 ## Getting started
@@ -15,7 +15,7 @@ Once entered it will be stored in the config file located at `~/.config/configst
 To simplify this process, run the following command to enter all config values at once.
 
 ```
-mmct-init
+mmct init-config
 ```
 
 Alternatively, you can create the config file manually.
@@ -31,7 +31,7 @@ The following commands delete expired or unused content from a contentful space.
 Deletes all entries that have never been published.
 
 ```
-mmct-trim drafts <space-id> [--grace-period <days>] [--dry-run]
+mmct trim-drafts <space-id> [--grace-period <days>] [--dry-run]
 ```
 
 * **--grace-period** Keep all entries that have been updated within the last `<days>`. Default: config value
@@ -42,7 +42,7 @@ mmct-trim drafts <space-id> [--grace-period <days>] [--dry-run]
 Deletes all entries with an expiry date in the past and entries linked in expired entries and not anywhere else.
 
 ```
-mmct-trim outdated-entries <space-id> <expiry-field> [--grace-period <days>] [--dry-run]
+mmct trim-outdated-entries <space-id> <expiry-field> [--grace-period <days>] [--dry-run]
 ```
 
 * **expiry-field** The name of the field containing the expiration date of the entry.
@@ -54,7 +54,7 @@ mmct-trim outdated-entries <space-id> <expiry-field> [--grace-period <days>] [--
 Deletes all assets that are not linked in any entries. Best used after the previous command.
 
 ```
-mmct-trim orphaned-assets <space-id> [--grace-period <days>] [--dry-run]
+mmct trim-orphaned-assets <space-id> [--grace-period <days>] [--dry-run]
 ```
 
 * **--grace-period** Keep all entries that have been updated within the last `<days>`. Default: config value
@@ -66,7 +66,7 @@ Deletes all entries of the given content model that are not linked in any entrie
 Useful if you have entries that are only used as links in other entries.
 
 ```
-mmct-trim orphaned-entries <space-id> <content-model-id> [--grace-period <days>] [--dry-run]
+mmct trim-orphaned-entries <space-id> <content-model-id> [--grace-period <days>] [--dry-run]
 ```
 
 * **content-model-id** Content model ID of the entries to delete.
@@ -86,7 +86,7 @@ If the field is localized, all language versions will be set to the same value.
 Previously published entries without pending changes will be published again after updating.
 
 ```
-mmct-fill default-value <space-id> <content-model-id> <field> <value>
+mmct fill-default-value <space-id> <content-model-id> <field> <value>
 ```
 
 * **content-model-id** Content model ID of the entries to update.
@@ -104,7 +104,7 @@ Copies the text value in the source field to the destination field for all entri
 Previously published entries without pending changes will be published again after updating.
 
 ```
-mmct-copy value <space-id> <content-model-id> <src-field> <dest-field>
+mmct copy-value <space-id> <content-model-id> <src-field> <dest-field>
 ```
 
 * **content-model-id** Content model ID of the entries to update.
@@ -119,7 +119,7 @@ Tests a regular expression against all entries of a content type.
 Use this command to make sure that existing entries match a new validation for content editing.
 
 ```
-mmct-test regex <space-id> <content-model-id> <field>
+mmct test-regex <space-id> <content-model-id> <field>
 ```
 
 * **content-model-id** Content model ID of the entries to check.

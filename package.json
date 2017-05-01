@@ -1,32 +1,43 @@
 {
   "name": "MMCT",
-  "version": "2.2.0",
+  "version": "3.0.0",
   "description": "Toolset for contentful space management",
   "repository": {
     "type": "git",
     "url": "https://github.com/veu/mmct.git"
   },
   "dependencies": {
-    "awaiting": "^2.0.1",
+    "@types/configstore": "^2.1.1",
+    "@types/inquirer": "0.0.34",
+    "@types/lodash": "^4.14.63",
+    "@types/node": "^8.0.1",
+    "@types/yargs": "^6.6.0",
     "configstore": "^3.0.0",
     "contentful-management": "^3.3.4",
     "inquirer": "^3.0.6",
+    "inversify": "^4.1.0",
     "lodash": "^4.16.4",
+    "ts-node": "^3.0.6",
+    "typescript": "^2.3.4",
     "yargs": "^7.0.2"
   },
   "devDependencies": {
+    "@types/jasmine": "^2.5.47",
     "jasmine": "^2.5.2",
-    "mock-require": "^2.0.2"
+    "jasmine-ts": "^0.1.0"
   },
   "engines": {
-    "node": ">=7.6"
+    "node": ">=6.11"
+  },
+  "scripts": {
+    "test": "jasmine-ts 'spec/src/*-spec.ts'"
   },
   "bin": {
-    "mmct-copy": "./bin/copy.js",
-    "mmct-fill": "./bin/fill.js",
-    "mmct-init": "./bin/init.js",
-    "mmct-trim": "./bin/trim.js"
+    "mmct": "./bin/mmct.js"
   },
   "author": "Rebecca König",
+  "contributors": [
+    "reBuy reCommerce GmbH"
+  ],
   "license": "MIT"
 }
