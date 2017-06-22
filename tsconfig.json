@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "allowJs": true,
+        "noImplicitAny": true,
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "lib": [
+            "es2015"
+        ]
+    },
+    "include": [
+        "bin/*",
+        "src/**/*",
+        "typings/*",
+        "spec/src/*"
+    ]
+}
