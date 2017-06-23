@@ -7,11 +7,37 @@ require('ts-node').register({
     "ignore": false
 });
 
-const copy = require('../src/command/copy');
-const fill = require('../src/command/fill');
-const init = require('../src/command/init');
-const test = require('../src/command/test');
-const trim = require('../src/command/trim');
+const commands = [
+    'copy',
+    'fill',
+    'init',
+    'test',
+    'trim'
+];
+
+function requireCommand(program, command) {
+    const module = require('../src/command/' + command);
+
+    return module.addCommands(program);
+}
+
+function requireCommands(program) {
+    return Promise.all(commands.map(function (command) {
+        return requireCommand(program, command);
+    }));
+}
+
+function requireNeededCommands(program) {
+    const command = commands.find(function (command) {
+        return process.argv[2].indexOf(command + '-') === 0;
+    });
+
+    if (command) {
+        return requireCommand(program, command);
+    }
+
+    return requireCommands(program);
+}
 
 var program = yargs
     .version()
@@ -27,19 +53,6 @@ var program = yargs
         console.log('Unknown command:', command);
     });
 
-copy.addCommands(program)
-    .then(function () {
-        return fill.addCommands(program);
-    })
-    .then(function () {
-        return init.addCommands(program);
-    })
-    .then(function () {
-        return test.addCommands(program);
-    })
-    .then(function () {
-        return trim.addCommands(program);
-    })
-    .then(function () {
-        program.help().argv;
-    });
+requireNeededCommands(program).then(function () {
+    program.help().argv;
+});
