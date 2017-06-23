@@ -14,6 +14,7 @@
     "@types/yargs": "^6.6.0",
     "configstore": "^3.0.0",
     "contentful-management": "^3.3.4",
+    "gelf": "^1.0.3",
     "inquirer": "^3.0.6",
     "inversify": "^4.1.0",
     "lodash": "^4.16.4",

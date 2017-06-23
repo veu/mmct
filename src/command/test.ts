@@ -1,15 +1,8 @@
 import {getToken} from '../config';
 import {getSpace} from '../contentful';
+import {error} from '../logger';
 import {testRegex} from '../regex-tester';
 import {Argv} from 'yargs';
-
-const reportError = (error: Error) => {
-    try {
-        error = JSON.parse(error.message);
-    } catch (ignore) {}
-
-    console.error('Error: ' + error.message);
-};
 
 export async function addCommands(program: Argv) {
     program
@@ -20,10 +13,9 @@ export async function addCommands(program: Argv) {
 
                 const stats = await testRegex(space, argv.contentModelId, argv.field);
 
-
                 console.log(`${stats.matchedCount} of ${stats.testedCount} entries matched.`);
-            } catch (e) {
-                reportError(e);
+            } catch (exception) {
+                error(exception.message, exception);
             }
         });
 }

@@ -1,18 +1,11 @@
 import {getGracePeriod, getToken} from '../config';
 import {config, getSpace} from '../contentful';
 import {trimDrafts} from '../draft-trimmer';
+import {error} from '../logger';
 import {trimOrphanedAssets} from '../orphaned-asset-trimmer';
 import {trimOrphanedEntries} from '../orphaned-entry-trimmer';
 import {trimOutdatedEntries} from '../outdated-entry-trimmer';
 import {Argv} from 'yargs';
-
-const reportError = (error: Error) => {
-    try {
-        error = JSON.parse(error.message);
-    } catch (ignore) {}
-
-    console.error('Error: ' + error.message);
-};
 
 export async function addCommands(program: Argv) {
     program
@@ -37,8 +30,8 @@ export async function addCommands(program: Argv) {
                 const stats = await trimDrafts(space);
 
                 console.log(`Deleted ${stats.deletedCount} drafts.`);
-            } catch (e) {
-                reportError(e);
+            } catch (exception) {
+                error(exception.message, exception);
             }
         })
         .command('trim-orphaned-assets <space>', 'delete unused assets', {}, async function (argv: any) {
@@ -51,8 +44,8 @@ export async function addCommands(program: Argv) {
                 const stats = await trimOrphanedAssets(space);
 
                 console.log(`Deleted ${stats.deletedCount} orphaned assets.`);
-            } catch (e) {
-                reportError(e);
+            } catch (exception) {
+                error(exception.message, exception);
             }
         })
         .command('trim-orphaned-entries <space> <content-model-id>', 'delete unused entries of the type', {}, async function (argv: any) {
@@ -65,8 +58,8 @@ export async function addCommands(program: Argv) {
                 const stats = await trimOrphanedEntries(space, argv.contentModelId);
 
                 console.log(`Deleted ${stats.deletedCount} orphaned entries.`);
-            } catch (e) {
-                reportError(e);
+            } catch (exception) {
+                error(exception.message, exception);
             }
         })
         .command('trim-outdated-entries <space> <field>', 'delete entries where <field> is in the past', {}, async function (argv: any) {
@@ -79,8 +72,8 @@ export async function addCommands(program: Argv) {
                 const stats = await trimOutdatedEntries(space, argv.field);
 
                 console.log(`Deleted ${stats.deletedCount} outdated entries.`);
-            } catch (e) {
-                reportError(e);
+            } catch (exception) {
+                error(exception.message, exception);
             }
         });
 }
