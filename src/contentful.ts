@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import {clone} from 'lodash';
 import {Asset, createClient, Entry, HttpQuery, Space} from 'contentful-management';
 import EntityLink from './entity-link';
 import {info} from './logger';
@@ -55,7 +55,7 @@ export async function getSpace(spaceId: string, accessToken: string) {
 }
 
 export async function getAssets(space: Space, options: HttpQuery = {}) {
-    options = _.clone(options);
+    options = clone(options);
     options.skip = options.skip || 0;
     options.limit = this.config.entityBatchLimit;
 
@@ -63,7 +63,7 @@ export async function getAssets(space: Space, options: HttpQuery = {}) {
 }
 
 export async function getEntries(space: Space, options: HttpQuery = {}) {
-    options = _.clone(options);
+    options = clone(options);
     options.skip = options.skip || 0;
     options.limit = this.config.entityBatchLimit;
 
