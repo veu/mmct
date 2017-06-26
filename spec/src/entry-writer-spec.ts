@@ -3,7 +3,6 @@ import * as contentful from '../../src/contentful';
 import {ContentType, Entry, Space} from 'contentful-management'
 import {buildMockContentType} from '../mock/mock-content-type-builder';
 import {buildMockEntry} from '../mock/mock-entry-builder';
-import {testAsync} from '../helper';
 
 describe('entryWriter', function () {
     describe('fillDefaultValue', function () {
@@ -31,7 +30,7 @@ describe('entryWriter', function () {
             contentType = buildMockContentType('model-id').withField(fieldName, 'Symbol').get();
         });
 
-        it('updates entries with the correct value', testAsync(async function () {
+        it('updates entries with the correct value', async function () {
             entries.push(
                 buildMockEntry().get(),
                 buildMockEntry().get()
@@ -45,9 +44,9 @@ describe('entryWriter', function () {
             }
 
             expect(stats.updatedCount).toBe(2);
-        }));
+        });
 
-        it('updates all languages for a localized field', testAsync(async function () {
+        it('updates all languages for a localized field', async function () {
             entries.push(
                 buildMockEntry().get(),
                 buildMockEntry().get()
@@ -60,9 +59,9 @@ describe('entryWriter', function () {
             for (const entry of entries) {
                 expect(entry.fields[fieldName]).toEqual({'en': value, 'fr': value});
             }
-        }));
+        });
 
-        it('ignores entries already containing the field', testAsync(async function () {
+        it('ignores entries already containing the field', async function () {
             entries.push(
                 buildMockEntry().withField(fieldName, 'some value').get()
             );
@@ -72,9 +71,9 @@ describe('entryWriter', function () {
             expect(entries[0].fields[fieldName]).toEqual({'en': 'some value'});
             expect(contentful.updateEntity).not.toHaveBeenCalled();
             expect(stats.updatedCount).toBe(0);
-        }));
+        });
 
-        it('throws proper error if content type does not exist', testAsync(async function () {
+        it('throws proper error if content type does not exist', async function () {
             (<jasmine.Spy>contentful.getContentType).and.callFake(() => {
                 throw {name: 'NotFound'};
             });
@@ -86,9 +85,9 @@ describe('entryWriter', function () {
             } catch (e) {
                 expect(e.message).toEqual(jasmine.stringMatching(modelId));
             }
-        }));
+        });
 
-        it('throws if field is missing in content type', testAsync(async function () {
+        it('throws if field is missing in content type', async function () {
             contentType = buildMockContentType('model-id').get();
 
             try {
@@ -98,9 +97,9 @@ describe('entryWriter', function () {
             } catch (e) {
                 expect(e.message).toEqual(jasmine.stringMatching(fieldName));
             }
-        }));
+        });
 
-        it('throws if field type is not text', testAsync(async function () {
+        it('throws if field type is not text', async function () {
             contentType = buildMockContentType('model-id').withField(fieldName, 'Link').get();
 
             try {
@@ -110,9 +109,9 @@ describe('entryWriter', function () {
             } catch (e) {
                 expect(e.message).toEqual(jasmine.stringMatching(fieldName));
             }
-        }));
+        });
 
-        it('throws if editing field is disabled', testAsync(async function () {
+        it('throws if editing field is disabled', async function () {
             contentType.fields.find(field => field.id === fieldName).disabled = true;
 
             try {
@@ -122,7 +121,7 @@ describe('entryWriter', function () {
             } catch (e) {
                 expect(e.message).toEqual(jasmine.stringMatching(fieldName));
             }
-        }));
+        });
     });
 
     describe('copyValue', function () {
@@ -145,7 +144,7 @@ describe('entryWriter', function () {
                 .get();
         });
 
-        it('copies values', testAsync(async function () {
+        it('copies values', async function () {
             entries.push(
                 buildMockEntry().withField('src', 'value').get(),
                 buildMockEntry().withField('src', 'value').withField('dest', 'different value').get()
@@ -159,9 +158,9 @@ describe('entryWriter', function () {
             }
 
             expect(stats.updatedCount).toBe(2);
-        }));
+        });
 
-        it('throws if source field is missing in content type', testAsync(async function () {
+        it('throws if source field is missing in content type', async function () {
             contentType = buildMockContentType('model-id').withField('dest', 'Symbol').get();
 
             try {
@@ -170,9 +169,9 @@ describe('entryWriter', function () {
             } catch (e) {
                 expect(e.message).toEqual(jasmine.stringMatching('src'));
             }
-        }));
+        });
 
-        it('throws if destination field is missing in content type', testAsync(async function () {
+        it('throws if destination field is missing in content type', async function () {
             contentType = buildMockContentType('model-id').withField('src', 'Symbol').get();
 
             try {
@@ -181,9 +180,9 @@ describe('entryWriter', function () {
             } catch (e) {
                 expect(e.message).toEqual(jasmine.stringMatching('dest'));
             }
-        }));
+        });
 
-        it('throws if destination field is disabled', testAsync(async function () {
+        it('throws if destination field is disabled', async function () {
             contentType.fields.find(field => field.id === 'dest').disabled = true;
 
             try {
@@ -192,9 +191,9 @@ describe('entryWriter', function () {
             } catch (e) {
                 expect(e.message).toEqual(jasmine.stringMatching('dest'));
             }
-        }));
+        });
 
-        it('throws if source field is localized but destination field is not', testAsync(async function () {
+        it('throws if source field is localized but destination field is not', async function () {
             contentType.fields.find(field => field.id === 'src').localized = true;
 
             try {
@@ -204,9 +203,9 @@ describe('entryWriter', function () {
                 expect(e.message).toEqual(jasmine.stringMatching('src'));
                 expect(e.message).toEqual(jasmine.stringMatching('dest'));
             }
-        }));
+        });
 
-        it('throws if source field is not localized but destination field is', testAsync(async function () {
+        it('throws if source field is not localized but destination field is', async function () {
             contentType.fields.find(field => field.id === 'dest').localized = true;
 
             try {
@@ -216,9 +215,9 @@ describe('entryWriter', function () {
                 expect(e.message).toEqual(jasmine.stringMatching('src'));
                 expect(e.message).toEqual(jasmine.stringMatching('dest'));
             }
-        }));
+        });
 
-        it('throws if source field does not have a text type', testAsync(async function () {
+        it('throws if source field does not have a text type', async function () {
             contentType.fields.find(field => field.id === 'src').type = 'Link';
 
             try {
@@ -227,9 +226,9 @@ describe('entryWriter', function () {
             } catch (e) {
                 expect(e.message).toEqual(jasmine.stringMatching('src'));
             }
-        }));
+        });
 
-        it('throws if destination field does not have a text type', testAsync(async function () {
+        it('throws if destination field does not have a text type', async function () {
             contentType.fields.find(field => field.id === 'dest').type = 'Link';
 
             try {
@@ -238,9 +237,9 @@ describe('entryWriter', function () {
             } catch (e) {
                 expect(e.message).toEqual(jasmine.stringMatching('dest'));
             }
-        }));
+        });
 
-        it('throws if trying to copy long text into short text', testAsync(async function () {
+        it('throws if trying to copy long text into short text', async function () {
             contentType = buildMockContentType('model-id')
                 .withField('src', 'Text')
                 .withField('dest', 'Symbol')
@@ -250,6 +249,6 @@ describe('entryWriter', function () {
                 await entryWriter.copyValue(space, modelId, 'src', 'dest');
                 fail();
             } catch (e) {}
-        }));
+        });
     });
 });
