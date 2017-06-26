@@ -16,7 +16,6 @@
     "contentful-management": "^3.3.4",
     "gelf": "^1.0.3",
     "inquirer": "^3.0.6",
-    "inversify": "^4.1.0",
     "lodash": "^4.16.4",
     "ts-node": "^3.0.6",
     "typescript": "^2.3.4",
