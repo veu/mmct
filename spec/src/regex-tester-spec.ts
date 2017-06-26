@@ -4,6 +4,7 @@ import {Entry, Space} from 'contentful-management';
 import * as inquirer from 'inquirer';
 import {buildMockEntry} from '../mock/mock-entry-builder';
 import {testAsync} from '../helper';
+import * as logger from '../../src/logger';
 
 describe('regexTester', function () {
     describe('test', function () {
@@ -17,7 +18,7 @@ describe('regexTester', function () {
             regex = '.';
             flags = '';
 
-            spyOn(console, 'log');
+            spyOn(logger, 'info');
 
             spyOn(contentful, 'getEntries').and.returnValue(new Promise(resolve => resolve(entries)));
 
@@ -37,8 +38,8 @@ describe('regexTester', function () {
 
             const stats = await testRegex(space, 'model-id', 'field');
 
-            expect(console.log).toHaveBeenCalledTimes(1);
-            expect((<jasmine.Spy>console.log).calls.argsFor(0)[0]).toContain('entry2');
+            expect(logger.info).toHaveBeenCalledTimes(1);
+            expect((<jasmine.Spy>logger.info).calls.argsFor(0)[0]).toContain('entry2');
 
             expect(stats).toEqual({
                 matchedCount: 1,
@@ -63,9 +64,9 @@ describe('regexTester', function () {
 
             const stats = await testRegex(space, 'model-id', 'field');
 
-            expect(console.log).toHaveBeenCalledTimes(2);
-            expect((<jasmine.Spy>console.log).calls.argsFor(0)[0]).toContain('‘en’');
-            expect((<jasmine.Spy>console.log).calls.argsFor(1)[0]).toContain('‘fr’');
+            expect(logger.info).toHaveBeenCalledTimes(2);
+            expect((<jasmine.Spy>logger.info).calls.argsFor(0)[0]).toContain('‘en’');
+            expect((<jasmine.Spy>logger.info).calls.argsFor(1)[0]).toContain('‘fr’');
 
             expect(stats).toEqual({
                 matchedCount: 0,
@@ -84,7 +85,7 @@ describe('regexTester', function () {
 
             await testRegex(space, 'model-id', 'field');
 
-            expect(console.log).not.toHaveBeenCalled();
+            expect(logger.info).not.toHaveBeenCalled();
         }));
 
         it('throws on invalid regex', testAsync(async function () {
@@ -103,7 +104,7 @@ describe('regexTester', function () {
 
             await testRegex(space, 'model-id', 'field');
 
-            expect((<jasmine.Spy>console.log).calls.argsFor(0)[0]).toContain('entry1');
+            expect((<jasmine.Spy>logger.info).calls.argsFor(0)[0]).toContain('entry1');
         }));
     });
 });

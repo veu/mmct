@@ -1,6 +1,6 @@
 import {getToken} from '../config';
 import {getSpace} from '../contentful';
-import {error} from '../logger';
+import {error, info} from '../logger';
 import {testRegex} from '../regex-tester';
 import {Argv} from 'yargs';
 
@@ -13,7 +13,7 @@ export async function addCommands(program: Argv) {
 
                 const stats = await testRegex(space, argv.contentModelId, argv.field);
 
-                console.log(`${stats.matchedCount} of ${stats.testedCount} entries matched.`);
+                info(`${stats.matchedCount} of ${stats.testedCount} entries matched.`);
             } catch (exception) {
                 error(exception.message, exception);
             }

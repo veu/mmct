@@ -1,7 +1,7 @@
 import {getGracePeriod, getToken} from '../config';
 import {config, getSpace} from '../contentful';
 import {trimDrafts} from '../draft-trimmer';
-import {error} from '../logger';
+import {error, info} from '../logger';
 import {trimOrphanedAssets} from '../orphaned-asset-trimmer';
 import {trimOrphanedEntries} from '../orphaned-entry-trimmer';
 import {trimOutdatedEntries} from '../outdated-entry-trimmer';
@@ -29,7 +29,7 @@ export async function addCommands(program: Argv) {
                 const space = await getSpace(argv.space, token);
                 const stats = await trimDrafts(space);
 
-                console.log(`Deleted ${stats.deletedCount} drafts.`);
+                info(`Deleted ${stats.deletedCount} drafts.`);
             } catch (exception) {
                 error(exception.message, exception);
             }
@@ -43,7 +43,7 @@ export async function addCommands(program: Argv) {
                 const space = await getSpace(argv.space, token);
                 const stats = await trimOrphanedAssets(space);
 
-                console.log(`Deleted ${stats.deletedCount} orphaned assets.`);
+                info(`Deleted ${stats.deletedCount} orphaned assets.`);
             } catch (exception) {
                 error(exception.message, exception);
             }
@@ -57,7 +57,7 @@ export async function addCommands(program: Argv) {
                 const space = await getSpace(argv.space, token);
                 const stats = await trimOrphanedEntries(space, argv.contentModelId);
 
-                console.log(`Deleted ${stats.deletedCount} orphaned entries.`);
+                info(`Deleted ${stats.deletedCount} orphaned entries.`);
             } catch (exception) {
                 error(exception.message, exception);
             }
@@ -71,7 +71,7 @@ export async function addCommands(program: Argv) {
                 const space = await getSpace(argv.space, token);
                 const stats = await trimOutdatedEntries(space, argv.field);
 
-                console.log(`Deleted ${stats.deletedCount} outdated entries.`);
+                info(`Deleted ${stats.deletedCount} outdated entries.`);
             } catch (exception) {
                 error(exception.message, exception);
             }

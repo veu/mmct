@@ -5,6 +5,7 @@ import {buildMockAsset} from '../mock/mock-asset-builder';
 import {buildMockContentType} from '../mock/mock-content-type-builder'
 import {buildMockEntry} from '../mock/mock-entry-builder';
 import {testAsync} from '../helper';
+import * as logger from '../../src/logger';
 
 describe('contentful helper', function () {
     let testTime = 0;
@@ -168,7 +169,7 @@ describe('contentful helper', function () {
         let entry: Entry;
 
         beforeEach(function () {
-            spyOn(console, 'log');
+            spyOn(logger, 'info');
 
             entry = buildMockEntry().get();
         });
@@ -180,7 +181,7 @@ describe('contentful helper', function () {
 
             await contentful.deleteEntity(entry);
 
-            expect(console.log).toHaveBeenCalled();
+            expect(logger.info).toHaveBeenCalled();
             expect(entry.isPublished).not.toHaveBeenCalled();
         }));
 
@@ -215,7 +216,7 @@ describe('contentful helper', function () {
         let entry: Entry;
 
         beforeEach(function () {
-            spyOn(console, 'log');
+            spyOn(logger, 'info');
 
             entry = buildMockEntry().get();
         });
@@ -226,7 +227,7 @@ describe('contentful helper', function () {
 
             await contentful.updateEntity(entry);
 
-            expect(console.log).toHaveBeenCalled();
+            expect(logger.info).toHaveBeenCalled();
             expect(entry.update).toHaveBeenCalled();
         }));
 

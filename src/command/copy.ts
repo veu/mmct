@@ -1,7 +1,7 @@
 import {getToken} from '../config';
 import {getSpace} from '../contentful';
 import {copyValue} from '../entry-writer';
-import {error} from '../logger';
+import {error, info} from '../logger';
 import {Argv} from 'yargs';
 
 export async function addCommands(program: Argv) {
@@ -12,7 +12,7 @@ export async function addCommands(program: Argv) {
                 const space = await getSpace(argv.space, token);
                 const stats = await copyValue(space, argv.contentModelId, argv.srcField, argv.destField);
 
-                console.log(`Updated ${stats.updatedCount} entries.`);
+                info(`Updated ${stats.updatedCount} entries.`);
             } catch (exception) {
                 error(exception.message, exception);
             }

@@ -1,6 +1,7 @@
 import * as _ from 'lodash';
 import {Asset, createClient, Entry, HttpQuery, Space} from 'contentful-management';
 import EntityLink from './entity-link';
+import {info} from './logger';
 
 const getAgeInDays = function (entity: Asset | Entry): number {
     const updatedAt = +new Date(entity.sys.updatedAt);
@@ -73,7 +74,7 @@ export async function deleteEntity(entity: Asset | Entry) {
     const link = new EntityLink(entity);
     const age = Math.floor(getAgeInDays(entity));
 
-    console.log(`deleting ${age} day${age>1 ? 's' : ''} old ${entity.sys.type.toLowerCase()} ${link}`);
+    info(`deleting ${age} day${age>1 ? 's' : ''} old ${entity.sys.type.toLowerCase()} ${link}`);
 
     if (this.config.isDryRun) {
         return;
@@ -93,7 +94,7 @@ export function isInGracePeriod(entity: Asset | Entry) {
 export async function updateEntity(entity: Asset | Entry) {
     const link = new EntityLink(entity);
 
-    console.log(`updating ${entity.sys.type.toLowerCase()} ${link}`);
+    info(`Updating ${entity.sys.type.toLowerCase()} ${link}`);
 
     const updatedEntity = await entity.update();
 

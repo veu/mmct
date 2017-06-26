@@ -39,5 +39,5 @@ async function getConfigEntry(name: string, message: string, defaultValue?: any,
     const answers = await inquirer.prompt([{name: 'key', message, default: defaultValue, type}]);
     conf.set(name, answers['key']);
 
-    return answers.token;
+    return answers['key'];
 }

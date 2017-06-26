@@ -1,7 +1,7 @@
 import {getGraylogSettings, GraylogSettings} from './config';
 import {forOwn} from 'lodash';
 
-export async function logToGraylog(level: number, message: string, context: Error|object) {
+export async function logToGraylog(level: number, message: string, context?: Error|object) {
     const settings = await getGraylogSettings();
 
     if (settings === undefined) {
@@ -21,7 +21,11 @@ export async function logToGraylog(level: number, message: string, context: Erro
     gelf.emit('gelf.log', payload);
 }
 
-function addContext(payload: any, context: Error|object) {
+function addContext(payload: any, context?: Error|object) {
+    if (context === undefined) {
+        return;
+    }
+
     if (context instanceof Error) {
         payload.ctxt_exception = context.stack || context.message;
 

@@ -3,6 +3,7 @@ import * as contentful from '../src/contentful';
 import {Entry, Space} from 'contentful-management';
 import EntityLink from './entity-link';
 import * as inquirer from 'inquirer';
+import {info} from './logger';
 
 export async function testRegex(space: Space, modelId: string, fieldName: string) {
     const regex = await getRegex();
@@ -39,7 +40,7 @@ function getMatchingEntries(entries: Entry[], fieldName: string, regex: RegExp) 
 function testEntry(entry: Entry, fieldName: string, regex: RegExp) {
     if (!entry.fields[fieldName]) {
         const link = new EntityLink(entry);
-        console.log(`Field ‘${fieldName}’ is missing in entry ${link}`);
+        info(`Field ‘${fieldName}’ is missing in entry ${link}`);
 
         return false;
     }
@@ -54,7 +55,7 @@ function testEntry(entry: Entry, fieldName: string, regex: RegExp) {
         regex.lastIndex = 0;
         if (!regex.test(value)) {
             const link = new EntityLink(entry);
-            console.log(`Locale ‘${locale}’ doesn’t match in entry ${link}`);
+            info(`Locale ‘${locale}’ doesn’t match in entry ${link}`);
             matched = false;
         }
     });

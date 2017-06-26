@@ -28,6 +28,12 @@ function requireCommands(program) {
 }
 
 function requireNeededCommands(program) {
+    if (process.argv[2] === undefined) {
+        return new Promise(function (resolve) {
+            resolve();
+        });
+    }
+
     const command = commands.find(function (command) {
         return process.argv[2].indexOf(command + '-') === 0;
     });
