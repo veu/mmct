@@ -33,7 +33,7 @@ function addContext(payload: any, context?: Error|object) {
     }
 
     forOwn(context, (value, key) => {
-        payload['ctxt_' + key] = JSON.stringify(value);
+        payload['ctxt_' + key] = typeof value === 'string' ? value : JSON.stringify(value);
     });
 }
 
