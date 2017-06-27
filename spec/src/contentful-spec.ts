@@ -1,8 +1,7 @@
 import * as contentful from '../../src/contentful';
 import * as contentfulManagement from 'contentful-management';
-import {Client, EntityResponse, Entry, Locale, Space} from 'contentful-management';
+import {Client, Entry, Space} from 'contentful-management';
 import {buildMockAsset} from '../mock/mock-asset-builder';
-import {buildMockContentType} from '../mock/mock-content-type-builder'
 import {buildMockEntry} from '../mock/mock-entry-builder';
 import * as logger from '../../src/logger';
 
@@ -15,7 +14,7 @@ describe('contentful helper', function () {
         jasmine.clock().mockDate();
         jasmine.clock().tick(testTime += 1000);
 
-        space = jasmine.createSpyObj('space', ['getAssets', 'getContentType', 'getEntries', 'getLocales']);
+        space = jasmine.createSpyObj('space', ['getAssets', 'getEntries']);
     });
 
     afterEach(function () {
@@ -272,31 +271,6 @@ describe('contentful helper', function () {
             entry.sys.updatedAt = new Date(+new Date() - 24 * 60 * 60 * 1000 - 1).toISOString();
 
             expect(contentful.isInGracePeriod(entry)).toBe(false);
-        });
-    });
-
-    describe('getLocales', function () {
-        it('returns locales', async function () {
-            const expectedResponse: EntityResponse<Locale> = <any>['locale1', 'locale2'];
-            (<jasmine.Spy>space.getLocales).and.returnValue(new Promise (resolve => resolve(expectedResponse)));
-
-            const locales = await contentful.getLocales(space);
-
-            expect(locales).toBe(expectedResponse);
-        });
-    });
-
-    describe('getContentType', function () {
-        it('returns content type', async function () {
-            const contentTypeId = 'content type id';
-            const expectedContentType = buildMockContentType(contentTypeId).get();
-
-            (<jasmine.Spy>space.getContentType).and.returnValue(new Promise (resolve => resolve(expectedContentType)));
-
-            const contentType = await contentful.getContentType(space, contentTypeId);
-
-            expect(contentType).toBe(expectedContentType);
-            expect(space.getContentType).toHaveBeenCalledWith(contentTypeId);
         });
     });
 });

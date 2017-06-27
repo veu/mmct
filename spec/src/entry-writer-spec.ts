@@ -8,24 +8,26 @@ describe('entryWriter', function () {
     describe('fillDefaultValue', function () {
         let contentType: ContentType;
         let entries: Entry[];
+        let space: Space;
 
         const fieldName = 'fieldName';
         const value = 'value';
         const modelId = 'model-id';
-        const space = <Space>{};
 
         beforeEach(function () {
             entries = [];
 
             spyOn(contentful, 'getEntries').and.callFake(() => entries);
-            spyOn(contentful, 'getLocales').and.callFake(() => ({
+            spyOn(contentful, 'updateEntity');
+
+            space = jasmine.createSpyObj('space', ['getContentType', 'getLocales']);
+            (space.getContentType as jasmine.Spy).and.callFake(() => contentType);
+            (space.getLocales as jasmine.Spy).and.callFake(() => ({
                 items: [
                     {code: 'en', default: true},
                     {code: 'fr'}
                 ]
             }));
-            spyOn(contentful, 'getContentType').and.callFake(() => contentType);
-            spyOn(contentful, 'updateEntity');
 
             contentType = buildMockContentType('model-id').withField(fieldName, 'Symbol').get();
         });
@@ -74,7 +76,7 @@ describe('entryWriter', function () {
         });
 
         it('throws proper error if content type does not exist', async function () {
-            (<jasmine.Spy>contentful.getContentType).and.callFake(() => {
+            (space.getContentType as jasmine.Spy).and.callFake(() => {
                 throw {name: 'NotFound'};
             });
 
@@ -127,16 +129,18 @@ describe('entryWriter', function () {
     describe('copyValue', function () {
         let contentType: ContentType;
         let entries: Entry[];
+        let space: Space;
 
         const modelId = 'model-id';
-        const space = <Space>{};
 
         beforeEach(function () {
             entries = [];
 
             spyOn(contentful, 'getEntries').and.callFake(() => entries);
-            spyOn(contentful, 'getContentType').and.callFake(() => contentType);
             spyOn(contentful, 'updateEntity');
+
+            space = jasmine.createSpyObj('space', ['getContentType']);
+            (space.getContentType as jasmine.Spy).and.callFake(() => contentType);
 
             contentType = buildMockContentType('model-id')
                 .withField('src', 'Symbol')

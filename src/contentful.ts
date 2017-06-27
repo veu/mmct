@@ -102,11 +102,3 @@ export async function updateEntity(entity: Asset | Entry) {
         await updatedEntity.publish();
     }
 }
-
-export async function getLocales(space: Space) {
-    return await space.getLocales();
-}
-
-export async function getContentType(space: Space, contentTypeId: string) {
-    return await space.getContentType(contentTypeId)
-}
