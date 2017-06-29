@@ -4,7 +4,6 @@ import {buildMockEntry} from '../mock/mock-entry-builder';
 import * as entryTraverser from '../../src/entry-traverser';
 import * as linkedEntryIdCollector from '../../src/linked-entry-id-collector';
 import {trimOrphanedEntries} from '../../src/orphaned-entry-trimmer';
-import {testAsync} from '../helper';
 
 describe('orphanedEntryTrimmer', function () {
     const entries = [
@@ -29,7 +28,7 @@ describe('orphanedEntryTrimmer', function () {
         spyOn(linkedEntryIdCollector, 'createLinkedEntryIdCollector').and.returnValue(entryIdCollector);
     });
 
-    it('deletes orphaned entries', testAsync(async function () {
+    it('deletes orphaned entries', async function () {
         const stats = await trimOrphanedEntries(space, 'model');
 
         expect(entryTraverser.traverseEntries).toHaveBeenCalledWith(entries, entryIdCollector);
@@ -41,9 +40,9 @@ describe('orphanedEntryTrimmer', function () {
         }
 
         expect(stats.deletedCount).toBe(2);
-    }));
+    });
 
-    it('keeps entries of other content models', testAsync(async function () {
+    it('keeps entries of other content models', async function () {
         const stats = await trimOrphanedEntries(space, 'different-model');
 
         for (const entry of entries) {
@@ -51,9 +50,9 @@ describe('orphanedEntryTrimmer', function () {
         }
 
         expect(stats.deletedCount).toBe(0);
-    }));
+    });
 
-   it('keeps used entry', testAsync(async function () {
+   it('keeps used entry', async function () {
         entryIdCollector.entryIds.add('entry2');
 
         const stats = await trimOrphanedEntries(space, 'model');
@@ -62,9 +61,9 @@ describe('orphanedEntryTrimmer', function () {
         expect(contentful.deleteEntity).not.toHaveBeenCalledWith(entries[1]);
 
         expect(stats.deletedCount).toBe(1);
-    }));
+    });
 
-    it('skips orphaned entry in grace period', testAsync(async function () {
+    it('skips orphaned entry in grace period', async function () {
         (<jasmine.Spy>contentful.isInGracePeriod).and.callFake((entry: Entry) => entry === entries[1]);
 
         const stats = await trimOrphanedEntries(space, 'model');
@@ -73,5 +72,5 @@ describe('orphanedEntryTrimmer', function () {
         expect(contentful.deleteEntity).not.toHaveBeenCalledWith(entries[1]);
 
         expect(stats.deletedCount).toBe(1);
-    }));
+    });
 });

@@ -90,7 +90,7 @@ async function getLocales(space: Space, modelId: string, fieldName: string) {
         throw new Error(`Editing field ‘${fieldName}’ in content model ‘${contentType.name}’ is disabled`);
     }
 
-    const locales = await contentful.getLocales(space);
+    const locales = await space.getLocales();
     const relevantLocales = locales.items.filter(locale => field.localized || locale.default);
 
     return relevantLocales.map(locale => locale.code);
@@ -108,7 +108,7 @@ function createLocalizedValue(value: string, localeCodes: string[]): LocalizedFi
 
 async function getContentType(space: Space, id: string) {
     try {
-        return await contentful.getContentType(space, id);
+        return await space.getContentType(id);
     } catch (e) {
         if (e.name === 'NotFound') {
             throw new Error(`Content model ‘${id}’ does not exist`);

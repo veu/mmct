@@ -3,12 +3,11 @@ import {buildMockEntry} from '../mock/mock-entry-builder';
 import * as contentful from '../../src/contentful';
 import {Entry, Space} from 'contentful-management';
 import * as linkedEntryIdCollector from '../../src/linked-entry-id-collector';
-import {testAsync} from '../helper';
 import {trimOutdatedEntries} from '../../src/outdated-entry-trimmer';
 
 describe('outdatedEntryTrimmer', function () {
 
-    const space: Space = (<Space>{});
+    const space = {} as Space;
 
     let entryIdCollector: {entryIds: Set<string>};
     let entries: Entry[];
@@ -48,7 +47,7 @@ describe('outdatedEntryTrimmer', function () {
         jasmine.clock().uninstall();
     });
 
-    it('deletes outdated entries', testAsync(async function () {
+    it('deletes outdated entries', async function () {
         entries.push(
             buildMockEntry().withField('endDate', new Date(+new Date() - 1).toISOString()).get(),
             buildMockEntry().withField('endDate', new Date(+new Date() - 1e4).toISOString()).get()
@@ -63,9 +62,9 @@ describe('outdatedEntryTrimmer', function () {
         }
 
         expect(stats.deletedCount).toBe(2);
-    }));
+    });
 
-    it('keeps current entries', testAsync(async function () {
+    it('keeps current entries', async function () {
         entries.push(
             buildMockEntry().withField('endDate', new Date(+new Date() - 1).toISOString()).get(),
             buildMockEntry().withField('endDate', new Date(+new Date() + 1e4).toISOString()).get()
@@ -77,9 +76,9 @@ describe('outdatedEntryTrimmer', function () {
         expect(contentful.deleteEntity).not.toHaveBeenCalledWith(entries[1]);
 
         expect(stats.deletedCount).toBe(1);
-    }));
+    });
 
-    it('keeps entries without a date', testAsync(async function () {
+    it('keeps entries without a date', async function () {
         entries.push(
             buildMockEntry().get()
         );
@@ -89,9 +88,9 @@ describe('outdatedEntryTrimmer', function () {
         expect(contentful.deleteEntity).not.toHaveBeenCalledWith(entries[0]);
 
         expect(stats.deletedCount).toBe(0);
-    }));
+    });
 
-    it('skips outdated entries in grace period', testAsync(async function () {
+    it('skips outdated entries in grace period', async function () {
         entries.push(
             buildMockEntry().withField('endDate', new Date(+new Date() - 1).toISOString()).get(),
             buildMockEntry().withField('endDate', new Date(+new Date() - 1e4).toISOString()).get()
@@ -105,9 +104,9 @@ describe('outdatedEntryTrimmer', function () {
         expect(contentful.deleteEntity).not.toHaveBeenCalledWith(entries[1]);
 
         expect(stats.deletedCount).toBe(1);
-    }));
+    });
 
-    it('deletes entries linked in outdated entries', testAsync(async function () {
+    it('deletes entries linked in outdated entries', async function () {
         entries.push(
             buildMockEntry().withId('outdated').withField('endDate', new Date(+new Date() - 1).toISOString()).get(),
             buildMockEntry().withId('linked').get()
@@ -122,9 +121,9 @@ describe('outdatedEntryTrimmer', function () {
         for (const entry of entries) {
             expect(contentful.deleteEntity).toHaveBeenCalledWith(entry);
         }
-    }));
+    });
 
-    it('deletes entries linked indirectly in outdated entries', testAsync(async function () {
+    it('deletes entries linked indirectly in outdated entries', async function () {
         entries.push(
             buildMockEntry().withId('outdated').withField('endDate', new Date(+new Date() - 1).toISOString()).get(),
             buildMockEntry().withId('linked1').get(),
@@ -139,9 +138,9 @@ describe('outdatedEntryTrimmer', function () {
         await trimOutdatedEntries(space, 'endDate');
 
         expect(contentful.deleteEntity).toHaveBeenCalledWith(entries[2]);
-    }));
+    });
 
-    it('keeps entries linked in current entries', testAsync(async function () {
+    it('keeps entries linked in current entries', async function () {
         entries.push(
             buildMockEntry().withId('outdated').withField('endDate', new Date(+new Date() - 1).toISOString()).get(),
             buildMockEntry().withId('current').withField('endDate', new Date(+new Date() + 1e4).toISOString()).get(),
@@ -156,9 +155,9 @@ describe('outdatedEntryTrimmer', function () {
         await trimOutdatedEntries(space, 'endDate');
 
         expect(contentful.deleteEntity).not.toHaveBeenCalledWith(entries[2]);
-    }));
+    });
 
-    it('keeps entries linked indirectly in current entries', testAsync(async function () {
+    it('keeps entries linked indirectly in current entries', async function () {
         entries.push(
             buildMockEntry().withId('outdated').withField('endDate', new Date(+new Date() - 1).toISOString()).get(),
             buildMockEntry().withId('current').withField('endDate', new Date(+new Date() + 1e4).toISOString()).get(),
@@ -175,9 +174,9 @@ describe('outdatedEntryTrimmer', function () {
         await trimOutdatedEntries(space, 'endDate');
 
         expect(contentful.deleteEntity).not.toHaveBeenCalledWith(entries[3]);
-    }));
+    });
 
-    it('can handle circular dependencies', testAsync(async function () {
+    it('can handle circular dependencies', async function () {
         entries.push(
             buildMockEntry().withId('outdated').withField('endDate', new Date(+new Date() - 1).toISOString()).get(),
             buildMockEntry().withId('linked').get()
@@ -193,9 +192,9 @@ describe('outdatedEntryTrimmer', function () {
         for (const entry of entries) {
             expect(contentful.deleteEntity).toHaveBeenCalledWith(entry);
         }
-    }));
+    });
 
-    it('deletes entries in reverse order to allow for resuming after failure', testAsync(async function () {
+    it('deletes entries in reverse order to allow for resuming after failure', async function () {
         entries.push(
             buildMockEntry().withId('outdated').withField('endDate', new Date(+new Date() - 1).toISOString()).get(),
             buildMockEntry().withId('linked1').get(),
@@ -214,5 +213,5 @@ describe('outdatedEntryTrimmer', function () {
         const deletedEntries: Entry[] = (<jasmine.Spy>contentful.deleteEntity).calls.allArgs().map((args: any[]) => args[0]);
 
         expect(deletedEntries.map((entry: Entry) => entry.sys.id)).toEqual(entries.map(entry => entry.sys.id));
-    }));
+    });
 });

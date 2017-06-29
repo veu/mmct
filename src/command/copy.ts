@@ -1,15 +1,8 @@
 import {getToken} from '../config';
 import {getSpace} from '../contentful';
 import {copyValue} from '../entry-writer';
+import {error, info} from '../logger';
 import {Argv} from 'yargs';
-
-const reportError = (error: Error) => {
-    try {
-        error = JSON.parse(error.message);
-    } catch (ignore) {}
-
-    console.error('Error: ' + error.message);
-};
 
 export async function addCommands(program: Argv) {
     program
@@ -19,9 +12,9 @@ export async function addCommands(program: Argv) {
                 const space = await getSpace(argv.space, token);
                 const stats = await copyValue(space, argv.contentModelId, argv.srcField, argv.destField);
 
-                console.log(`Updated ${stats.updatedCount} entries.`);
-            } catch (e) {
-                reportError(e);
+                info(`Updated ${stats.updatedCount} entries.`);
+            } catch (exception) {
+                error(exception.message, exception);
             }
         });
 }

@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import {every} from 'lodash';
 import * as contentful from './contentful';
 import {Entry, Space} from 'contentful-management';
 import {traverseEntries} from './entry-traverser';
@@ -53,7 +53,7 @@ function isOutdated(entry: Entry, fieldName: string) {
         return false;
     }
 
-    return _.every(entry.fields[fieldName], (date: string) => new Date(date) < new Date());
+    return every(entry.fields[fieldName], (date: string) => new Date(date) < new Date());
 }
 
 function getNestedEntryIds(entries: Entry[]) {

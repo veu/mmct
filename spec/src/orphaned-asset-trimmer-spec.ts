@@ -2,7 +2,6 @@ import {trimOrphanedAssets} from '../../src/orphaned-asset-trimmer';
 import * as contentful from '../../src/contentful';
 import {Asset, Space} from 'contentful-management';
 import {buildMockAsset} from '../mock/mock-asset-builder';
-import {testAsync} from '../helper';
 import * as modAssetIdCollector from '../../src/asset-id-collector';
 import * as entryTraverser from '../../src/entry-traverser';
 
@@ -36,7 +35,7 @@ describe('orphanedAssetTrimmer', function () {
         assetTrimmer = require('../../src/orphaned-asset-trimmer');
     });
 
-    it('deletes orphaned assets', testAsync(async function () {
+    it('deletes orphaned assets', async function () {
         assetIdCollectorMock.assetIds = new Set();
 
         const stats = await trimOrphanedAssets(space);
@@ -51,9 +50,9 @@ describe('orphanedAssetTrimmer', function () {
         }
 
         expect(stats.deletedCount).toBe(2);
-    }));
+    });
 
-   it('keeps used asset', testAsync(async function () {
+   it('keeps used asset', async function () {
         assetIdCollectorMock.assetIds = new Set(['asset2']);
 
         const stats = await trimOrphanedAssets(space);
@@ -62,9 +61,9 @@ describe('orphanedAssetTrimmer', function () {
         expect(contentful.deleteEntity).not.toHaveBeenCalledWith(assets[1]);
 
         expect(stats.deletedCount).toBe(1);
-    }));
+    });
 
-    it('skips orphaned asset in grace period', testAsync(async function () {
+    it('skips orphaned asset in grace period', async function () {
         assetIdCollectorMock.assetIds = new Set();
         (<jasmine.Spy>contentful.isInGracePeriod).and.callFake((asset: Asset) => asset === assets[1]);
 
@@ -74,5 +73,5 @@ describe('orphanedAssetTrimmer', function () {
         expect(contentful.deleteEntity).not.toHaveBeenCalledWith(assets[1]);
 
         expect(stats.deletedCount).toBe(1);
-    }));
+    });
 });

@@ -20,6 +20,11 @@ mmct init-config
 
 Alternatively, you can create the config file manually.
 
+### Logging
+
+All commands are set up to optionally log to a [graylog](https://www.graylog.org/) instance.
+Enter host, port, and facility when running the `init-config` command to enable it.
+
 ## Usage
 
 ### Trimming content

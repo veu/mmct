@@ -1,10 +1,9 @@
 import * as contentful from '../../src/contentful';
 import * as contentfulManagement from 'contentful-management';
-import {Client, EntityResponse, Entry, Locale, Space} from 'contentful-management';
+import {Client, Entry, Space} from 'contentful-management';
 import {buildMockAsset} from '../mock/mock-asset-builder';
-import {buildMockContentType} from '../mock/mock-content-type-builder'
 import {buildMockEntry} from '../mock/mock-entry-builder';
-import {testAsync} from '../helper';
+import * as logger from '../../src/logger';
 
 describe('contentful helper', function () {
     let testTime = 0;
@@ -15,7 +14,7 @@ describe('contentful helper', function () {
         jasmine.clock().mockDate();
         jasmine.clock().tick(testTime += 1000);
 
-        space = jasmine.createSpyObj('space', ['getAssets', 'getContentType', 'getEntries', 'getLocales']);
+        space = jasmine.createSpyObj('space', ['getAssets', 'getEntries']);
     });
 
     afterEach(function () {
@@ -33,7 +32,7 @@ describe('contentful helper', function () {
             spyOn(contentfulManagement, 'createClient').and.callFake(() => client);
         });
 
-        it('passes credentials', testAsync(async function () {
+        it('passes credentials', async function () {
             const spaceId = 'space-id';
             const accessToken = 'token';
 
@@ -42,9 +41,9 @@ describe('contentful helper', function () {
             expect(contentfulManagement.createClient).toHaveBeenCalledWith({accessToken});
             expect(client.getSpace).toHaveBeenCalledWith(spaceId);
 
-        }));
+        });
 
-        it('throws proper error if connecting to space fails', testAsync(async function () {
+        it('throws proper error if connecting to space fails', async function () {
             const originalError = 'anything';
             (<jasmine.Spy>client.getSpace).and.throwError(originalError);
 
@@ -54,11 +53,11 @@ describe('contentful helper', function () {
             } catch (e) {
                 expect(e.message).not.toEqual(originalError);
             }
-        }));
+        });
     });
 
     describe('getAssets', function () {
-        it('returns entities for space', testAsync(async function () {
+        it('returns entities for space', async function () {
             const expectedAssets = [
                 buildMockAsset().withId('a').get()
             ];
@@ -70,9 +69,9 @@ describe('contentful helper', function () {
             const assets = await contentful.getAssets(space);
 
             expect(assets).toEqual(expectedAssets);
-        }));
+        });
 
-        it('passes paging parameters', testAsync(async function () {
+        it('passes paging parameters', async function () {
             (<jasmine.Spy>space.getAssets).and.returnValue(new Promise(resolve => {
                 resolve({items: [], total: 0});
             }));
@@ -84,9 +83,9 @@ describe('contentful helper', function () {
             await contentful.getAssets(space, {skip});
 
             expect(space.getAssets).toHaveBeenCalledWith({skip, limit: contentful.config.entityBatchLimit});
-        }));
+        });
 
-        it('fetches and combines batches', testAsync(async function () {
+        it('fetches and combines batches', async function () {
             const expectedAssets = [
                 buildMockAsset().withId('a').get(),
                 buildMockAsset().withId('b').get(),
@@ -108,11 +107,11 @@ describe('contentful helper', function () {
             const assets = await contentful.getAssets(space);
 
             expect(assets).toEqual(expectedAssets);
-        }));
+        });
     });
 
     describe('getEntries', function () {
-        it('returns entities for space', testAsync(async function () {
+        it('returns entities for space', async function () {
             const expectedEntries = [
                 buildMockEntry('model-id').withId('a').get()
             ];
@@ -123,9 +122,9 @@ describe('contentful helper', function () {
             const entries = await contentful.getEntries(space);
 
             expect(entries).toEqual(expectedEntries);
-        }));
+        });
 
-        it('passes paging parameters', testAsync(async function () {
+        it('passes paging parameters', async function () {
             (<jasmine.Spy>space.getEntries).and.returnValue(new Promise(resolve => {
                 resolve({items: [], total: 0});
             }));
@@ -137,9 +136,9 @@ describe('contentful helper', function () {
             await contentful.getEntries(space, {skip});
 
             expect(space.getEntries).toHaveBeenCalledWith({skip, limit: contentful.config.entityBatchLimit});
-        }));
+        });
 
-        it('fetches and combines batches', testAsync(async function () {
+        it('fetches and combines batches', async function () {
             const expectedEntries = [
                 buildMockEntry('model-id').withId('a').get(),
                 buildMockEntry('model-id').withId('b').get(),
@@ -161,30 +160,30 @@ describe('contentful helper', function () {
             const assets = await contentful.getEntries(space);
 
             expect(assets).toEqual(expectedEntries);
-        }));
+        });
     });
 
     describe('deleteEntity', function () {
         let entry: Entry;
 
         beforeEach(function () {
-            spyOn(console, 'log');
+            spyOn(logger, 'info');
 
             entry = buildMockEntry().get();
         });
 
-        it('stops after logging in dry run', testAsync(async function () {
+        it('stops after logging in dry run', async function () {
             contentful.config.isDryRun = true;
 
             entry.isPublished = jasmine.createSpy('entry.isPublished');
 
             await contentful.deleteEntity(entry);
 
-            expect(console.log).toHaveBeenCalled();
+            expect(logger.info).toHaveBeenCalled();
             expect(entry.isPublished).not.toHaveBeenCalled();
-        }));
+        });
 
-        it('deletes draft entity directly', testAsync(async function () {
+        it('deletes draft entity directly', async function () {
             contentful.config.isDryRun = false;
 
             entry.isPublished = jasmine.createSpy('entry.isPublished').and.returnValue(false);
@@ -193,9 +192,9 @@ describe('contentful helper', function () {
             await contentful.deleteEntity(entry);
 
             expect(entry.delete).toHaveBeenCalled();
-        }));
+        });
 
-        it('unpublishes and deletes published entity', testAsync(async function () {
+        it('unpublishes and deletes published entity', async function () {
             contentful.config.isDryRun = false;
 
             entry.isPublished = jasmine.createSpy('entry.isPublished').and.returnValue(true);
@@ -208,29 +207,29 @@ describe('contentful helper', function () {
 
             expect(entry.unpublish).toHaveBeenCalled();
             expect(entry.delete).toHaveBeenCalled();
-        }));
+        });
     });
 
     describe('updateEntity', function () {
         let entry: Entry;
 
         beforeEach(function () {
-            spyOn(console, 'log');
+            spyOn(logger, 'info');
 
             entry = buildMockEntry().get();
         });
 
-        it('logs and updates entity', testAsync(async function () {
+        it('logs and updates entity', async function () {
             entry.update = jasmine.createSpy('entry.update');
             entry.isPublished = () => false;
 
             await contentful.updateEntity(entry);
 
-            expect(console.log).toHaveBeenCalled();
+            expect(logger.info).toHaveBeenCalled();
             expect(entry.update).toHaveBeenCalled();
-        }));
+        });
 
-        it('publishes entry that was published without pending changes', testAsync(async function () {
+        it('publishes entry that was published without pending changes', async function () {
             const updatedEntry = buildMockEntry().get();
             updatedEntry.publish = jasmine.createSpy('updatedEntry.publish');
 
@@ -241,9 +240,9 @@ describe('contentful helper', function () {
             await contentful.updateEntity(entry);
 
             expect(updatedEntry.publish).toHaveBeenCalled();
-        }));
+        });
 
-        it('does not publish entry that was published with pending changes', testAsync(async function () {
+        it('does not publish entry that was published with pending changes', async function () {
             const updatedEntry = buildMockEntry().get();
             updatedEntry.publish = jasmine.createSpy('updatedEntry.publish');
 
@@ -254,7 +253,7 @@ describe('contentful helper', function () {
             await contentful.updateEntity(entry);
 
             expect(updatedEntry.publish).not.toHaveBeenCalled();
-        }));
+        });
     });
 
     describe('isInGracePeriod', function () {
@@ -273,30 +272,5 @@ describe('contentful helper', function () {
 
             expect(contentful.isInGracePeriod(entry)).toBe(false);
         });
-    });
-
-    describe('getLocales', function () {
-        it('returns locales', testAsync(async function () {
-            const expectedResponse: EntityResponse<Locale> = <any>['locale1', 'locale2'];
-            (<jasmine.Spy>space.getLocales).and.returnValue(new Promise (resolve => resolve(expectedResponse)));
-
-            const locales = await contentful.getLocales(space);
-
-            expect(locales).toBe(expectedResponse);
-        }));
-    });
-
-    describe('getContentType', function () {
-        it('returns content type', testAsync(async function () {
-            const contentTypeId = 'content type id';
-            const expectedContentType = buildMockContentType(contentTypeId).get();
-
-            (<jasmine.Spy>space.getContentType).and.returnValue(new Promise (resolve => resolve(expectedContentType)));
-
-            const contentType = await contentful.getContentType(space, contentTypeId);
-
-            expect(contentType).toBe(expectedContentType);
-            expect(space.getContentType).toHaveBeenCalledWith(contentTypeId);
-        }));
     });
 });

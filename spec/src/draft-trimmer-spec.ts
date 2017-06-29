@@ -2,7 +2,6 @@ import * as contentful from '../../src/contentful';
 import {Entry, Space} from 'contentful-management';
 import {trimDrafts} from '../../src/draft-trimmer';
 import {buildMockEntry} from '../mock/mock-entry-builder';
-import {testAsync} from '../helper';
 
 describe('draftTrimmer', function () {
 
@@ -18,7 +17,7 @@ describe('draftTrimmer', function () {
             spyOn(contentful, 'isInGracePeriod').and.returnValue(false);
         });
 
-        it('deletes drafts', testAsync(async function () {
+        it('deletes drafts', async function () {
             entries.push(
                 buildMockEntry('model-id').get(),
                 buildMockEntry('model-id').get()
@@ -35,9 +34,9 @@ describe('draftTrimmer', function () {
             }
 
             expect(stats).toEqual({deletedCount: 2});
-        }));
+        });
 
-        it('keeps published entries', testAsync(async function () {
+        it('keeps published entries', async function () {
             entries.push(
                 buildMockEntry('model-id').get(),
                 buildMockEntry('model-id').get()
@@ -52,9 +51,9 @@ describe('draftTrimmer', function () {
             expect(contentful.deleteEntity).toHaveBeenCalledWith(entries[1]);
 
             expect(stats).toEqual({deletedCount: 1});
-        }));
+        });
 
-        it('keeps drafts in grace period', testAsync(async function () {
+        it('keeps drafts in grace period', async function () {
             entries.push(
                 buildMockEntry('model-id').get(),
                 buildMockEntry('model-id').get()
@@ -72,7 +71,7 @@ describe('draftTrimmer', function () {
             expect(contentful.deleteEntity).toHaveBeenCalledWith(entries[1]);
 
             expect(stats).toEqual({deletedCount: 1});
-        }));
+        });
     });
 });
 
