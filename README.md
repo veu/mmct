@@ -49,6 +49,15 @@ Unmarks all webhooks by removing the given header. Webhooks that don’t have th
 mmct webhook-unmark-all <space-id> <header-name> <header-value> [--dry-run]
 ```
 
+#### Trigger webhooks
+
+Triggers webhooks tied to the _Entry.save_ event by updating a recent entry without changing its properties.
+If the entry was previously published without pending changes, _Entry.publish_ will be triggered as well.
+
+```
+mmct webhook-trigger-update <space-id>
+```
+
 ### Trimming content
 
 The following commands delete expired or unused content from a contentful space.

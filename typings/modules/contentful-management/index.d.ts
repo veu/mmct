@@ -161,6 +161,7 @@ declare module 'contentful-management' {
         skip?: number
         limit?: number
         content_type?: string
+        order?: string
     }
 
     export interface CustomWebhookHeader {
