@@ -27,6 +27,18 @@ export async function fillDefaultValue(space: Space, modelId: string, fieldName:
     };
 }
 
+export async function touchEntry(space: Space) {
+    const entries = await contentful.getEntries(space, {order: '-sys.updatedAt', limit: 1});
+
+    if (entries.length > 0) {
+        await contentful.updateEntity(entries[0]);
+    }
+
+    return {
+        updateTriggered: entries.length > 0
+    }
+}
+
 async function checkFieldCompatibility(space: Space, modelId: string, srcFieldName: string, destFieldName: string) {
     const contentType = await getContentType(space, modelId);
 

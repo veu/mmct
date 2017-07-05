@@ -255,4 +255,46 @@ describe('entryWriter', function () {
             } catch (e) {}
         });
     });
+
+    describe('touchEntry', function () {
+        let space: Space;
+        let entries: Entry[];
+
+        beforeEach(function () {
+            space = {} as Space;
+
+            entries = [];
+
+            spyOn(contentful, 'getEntries').and.callFake(() => entries);
+            spyOn(contentful, 'updateEntity').and.callFake((entry: Entry) => new Promise(resolve => resolve(entry)));
+        });
+
+        it('updates most recent entry', async function () {
+            const entry = buildMockEntry().get();
+            entries.push(entry);
+
+            const stats = await entryWriter.touchEntry(space);
+
+            expect(stats.updateTriggered).toBe(true);
+            expect(contentful.getEntries).toHaveBeenCalledWith(space, jasmine.objectContaining({order: '-sys.updatedAt'}));
+            expect(contentful.updateEntity).toHaveBeenCalledWith(entry);
+        });
+
+        it('does not modify entry', async function () {
+            const entry = buildMockEntry().get();
+            const entryJson = JSON.stringify(entry);
+            entries.push(entry);
+
+            const stats = await entryWriter.touchEntry(space);
+
+            expect(entryJson).toBe(JSON.stringify(entry));
+        });
+
+        it('detects empty space', async function () {
+
+            const stats = await entryWriter.touchEntry(space);
+
+            expect(stats.updateTriggered).toBe(false);
+        });
+    });
 });

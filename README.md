@@ -27,6 +27,37 @@ Enter host, port, and facility when running the `init-config` command to enable 
 
 ## Usage
 
+### Marking webhooks
+
+Most of the commands below manipulate data in your space causing webhooks to be triggered.
+There currently exists no direct solution from contentful to disable webhooks.
+As a workaround the following commands allow you to add a header to webhooks to mark them and ignore if you wish.
+
+#### Mark webhooks
+
+Marks all webhooks by adding the given header. Webhooks that already have the header are not touched.
+
+```
+mmct webhook-mark-all <space-id> <header-name> <header-value> [--dry-run]
+```
+
+#### Unmark webhooks
+
+Unmarks all webhooks by removing the given header. Webhooks that don’t have the header are not touched.
+
+```
+mmct webhook-unmark-all <space-id> <header-name> <header-value> [--dry-run]
+```
+
+#### Trigger webhooks
+
+Triggers webhooks tied to the _Entry.save_ event by updating a recent entry without changing its properties.
+If the entry was previously published without pending changes, _Entry.publish_ will be triggered as well.
+
+```
+mmct webhook-trigger-update <space-id>
+```
+
 ### Trimming content
 
 The following commands delete expired or unused content from a contentful space.

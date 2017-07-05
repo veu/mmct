@@ -66,19 +66,19 @@ declare module 'contentful-management' {
         fields: ContentTypeField[]
         name: string
         sys: {
-            id: string,
-            type: 'ContentType'
             createdAt: string
             createdBy: Link<'User'>
-            space: Link<'Space'>
             firstPublishedAt: string
+            id: string
             publishedCounter: number
             publishedAt: string
             publishedBy: Link<'User'>
             publishedVersion: number
-            version: number
+            space: Link<'Space'>
+            type: 'ContentType'
             updatedAt: string
             updatedBy: Link<'User'>
+            version: number
         }
     }
 
@@ -134,19 +134,65 @@ declare module 'contentful-management' {
         }
     }
 
-    export interface Locale {
+    export interface LocaleData {
         code: string
         default: boolean
         fallbackCode: string
         name: string
         optional: boolean
+        sys: {
+            createdAt: string
+            createdBy: Link<'User'>
+            id: string
+            space: Link<'Space'>
+            type: 'Locale'
+            updatedAt: string
+            updatedBy: Link<'User'>
+            version: number
+        }
+    }
+
+    export interface Locale extends LocaleData {
+        delete(): Promise<Entry>
+        update(): Promise<Entry>
     }
 
     export interface HttpQuery {
         skip?: number
         limit?: number
         content_type?: string
+        order?: string
     }
+
+    export interface CustomWebhookHeader {
+        key: string
+        value: string
+    }
+
+    export interface WebhookDefinitionData {
+        headers: CustomWebhookHeader[]
+        httpBasicUsername: string
+        name: string
+        sys: {
+            createdAt: string
+            createdBy: Link<'User'>
+            id: string
+            space: Link<'Space'>
+            type: 'WebhookDefinition'
+            updatedAt: string
+            updatedBy: Link<'User'>
+            version: number
+        }
+        topics: string[]
+        url: string
+    }
+
+    export interface WebhookDefinition extends WebhookDefinitionData {
+        delete(): Promise<Entry>
+        update(): Promise<Entry>
+    }
+
+    export type Entity = Asset | Entry | Locale | WebhookDefinition;
 
     interface EntityResponse<T> {
         total: number
@@ -158,6 +204,7 @@ declare module 'contentful-management' {
         getEntries(query: HttpQuery): Promise<EntityResponse<Entry>>
         getLocales(): Promise<EntityResponse<Locale>>
         getContentType(contentTypeId: string): Promise<ContentType>
+        getWebhooks(): Promise<EntityResponse<WebhookDefinition>>
     }
 
     export interface Client {

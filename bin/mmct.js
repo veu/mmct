@@ -12,7 +12,8 @@ const commands = [
     'fill',
     'init',
     'test',
-    'trim'
+    'trim',
+    'webhook'
 ];
 
 function requireCommand(program, command) {

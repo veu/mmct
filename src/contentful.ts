@@ -1,9 +1,9 @@
 import {clone} from 'lodash';
-import {Asset, createClient, Entry, HttpQuery, Space} from 'contentful-management';
+import {Asset, createClient, Entity, Entry, HttpQuery, Space, WebhookDefinition} from 'contentful-management';
 import EntityLink from './entity-link';
 import {info} from './logger';
 
-const getAgeInDays = function (entity: Asset | Entry): number {
+const getAgeInDays = function (entity: Entity): number {
     const updatedAt = +new Date(entity.sys.updatedAt);
     const age = (+new Date() - updatedAt);
 
@@ -70,7 +70,7 @@ export async function getEntries(space: Space, options: HttpQuery = {}) {
     return await getEntriesBatchwise(space, options);
 }
 
-export async function deleteEntity(entity: Asset | Entry) {
+export async function deleteEntity(entity: Entity) {
     const link = new EntityLink(entity);
     const age = Math.floor(getAgeInDays(entity));
 
@@ -80,7 +80,7 @@ export async function deleteEntity(entity: Asset | Entry) {
         return;
     }
 
-    if (entity.isPublished()) {
+    if (isPublishable(entity) && entity.isPublished()) {
         await entity.unpublish();
     }
 
@@ -91,14 +91,18 @@ export function isInGracePeriod(entity: Asset | Entry) {
     return getAgeInDays(entity) <= this.config.gracePeriod;
 }
 
-export async function updateEntity(entity: Asset | Entry) {
+export async function updateEntity(entity: Entity) {
     const link = new EntityLink(entity);
 
     info(`Updating ${entity.sys.type.toLowerCase()} ${link}`);
 
     const updatedEntity = await entity.update();
 
-    if (entity.isPublished() && !entity.isUpdated()) {
+    if (isPublishable(entity) && entity.isPublished() && !entity.isUpdated()) {
         await updatedEntity.publish();
     }
+}
+
+function isPublishable(entity: Entity): entity is Asset | Entry {
+    return (entity as Asset | Entry).isPublished !== undefined;
 }
